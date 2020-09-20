@@ -7,41 +7,38 @@ export default {
     // 棋盘大小  15 * 15
     size: config.size,
     // 递归深度
-    deep: 6,
-    chessboard: times(Math.pow(config.size, 2), index => 2),
-    nylName: 'nielonglong',
-    nylAge: 22,
-    current2: 1,
-    total2: 0,
-    searchParams: {},
-    recipeList: [],
-    totalData: {},
+    deep: config.deep,
+    // 棋盘
+    chessboard: times(Math.pow(config.size, 2), index => 0),
+    /**
+     * 当前棋手  -- 白子:1, 黑子:2
+     */
+    chessPlayer: 1,
+    /**
+     * 当前棋盘状态
+     * 0:未开始， 1：进行中，2：已结束，3：锁定
+     */
+    boardStatus: 0,
+
+    /**
+     * 是否人机对战
+     */
+    isAi: true,
   },
 
   // effects中处理异步函数
   effects: {
-    *getRecipeData_nyl({ payload }, { call, put, select }) {
-      const { searchParams } = yield select(state => state.testnyl);
-      // get 是api.js中封装点的get请求方法
-      const data = yield call(get, '接口url', { ...searchParams, ...payload });
-      // 保存数据, payload里面的值 更新UI
-      yield put({
-        type: 'save', // save是reducer中的save方法
-        payload: {
-          recipeList: data.items,
-          current2: payload.page,
-          total2: data.count,
-        },
-      });
-    },
+    *getRecipeData_nyl({ payload }, { call, put, select }) {},
   },
 
-  // reducers处理同步函数
   reducers: {
-    // 同步保存到sate
-    save(state, { payload }) {
-      console.log({ ...state, ...payload });
-      return { ...state, ...payload }; //{...变量1, ...变量2} 合并两个对象为一个对象
+    // 保存棋盘
+    saveChessboard(state, { payload }) {
+      return { ...state, chessboard: payload };
+    },
+    // 改变棋手
+    changeChessPlayer(state, { payload }) {
+      return { ...state, chessPlayer: payload };
     },
   },
 };

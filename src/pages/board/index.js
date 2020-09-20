@@ -1,54 +1,50 @@
-import React from 'react';
-import styles from './index.less';
-import { connect } from 'umi';
-import { map, times } from 'lodash';
-import classnames from 'classnames';
-import piece from '@/asset/images/piece.jpg';
-import piece1 from '@/asset/images/piece1.jpg';
-const BlackPiece = () => {
-  return (
-    <div className={classnames(styles['black'], styles['piece'])}>
-      <img src={piece1} alt="" />
-    </div>
-  );
-};
-
-const WhitePiece = () => {
-  return (
-    <div className={classnames(styles['white'], styles['piece'])}>
-      <img src={piece} alt="" />
-    </div>
-  );
-};
+import React, { useCallback } from 'react';
+import { connect, useDispatch } from 'umi';
+import { usePersistFn, useUpdateLayoutEffect } from 'ahooks';
+import Border from './Border/index';
+import { findPosition } from './ai/index';
+import config from './config';
 
 const Board = props => {
-  const { chessboard, size } = props;
-  return (
-    <div className={styles['border-wrap']}>
-      <div
-        className={styles['border-bg']}
-        // +3px的边框宽度
-        style={{ width: 34 * (size - 1) + 3 }}
-      >
-        {times(Math.pow(size - 1, 2), key => {
-          return <div key={key}></div>;
-        })}
-      </div>
-      <div className={styles['border']}>
-        {map(chessboard, (status, key) => {
-          return (
-            <div key={key}>
-              {status === 1 ? (
-                <WhitePiece />
-              ) : status === 2 ? (
-                <BlackPiece />
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  const { chessboard, chessPlayer } = props;
+  const dispatch = useDispatch();
+
+  const emit = usePersistFn(index => {
+    if (chessboard[index]) return;
+    const newChessboard = [...chessboard];
+    newChessboard[index] = chessPlayer;
+
+    dispatch({
+      type: 'board/saveChessboard',
+      payload: newChessboard,
+    });
+
+    dispatch({
+      type: 'board/changeChessPlayer',
+      payload: 3 - chessPlayer,
+    });
+  });
+
+  const getPosition = usePersistFn(() => {
+    return findPosition({ list: chessboard, size: config.size, chessPlayer });
+  });
+
+  useUpdateLayoutEffect(() => {
+    if (chessPlayer === 2) {
+      const a = getPosition();
+
+      // a.sort((a, b) => {
+      //   return b.score - a.score;
+      // });
+      // console.log(a);
+    }
+  }, [chessPlayer, getPosition]);
+
+  return <Border emit={emit} />;
 };
 
-export default connect(({ board }) => board)(Board);
+export default connect(({ board }) => ({
+  chessboard: board.chessboard,
+  size: board.size,
+  chessPlayer: board.chessPlayer,
+}))(Board);
