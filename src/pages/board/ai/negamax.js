@@ -4,6 +4,12 @@ import getScore from './getScore';
 import { times } from 'lodash';
 const { space } = config;
 
+// let i = 0;
+
+// let time = 0;
+// let time1 = 0;
+// let time2 = 0;
+
 /**
  * 将索引转换为坐标
  * @param {Number} index 索引
@@ -70,8 +76,8 @@ const handleGetScoreByPosition = params => {
   const durationList = getDurationList(params);
   return durationList
     .map(list => {
-      // list = [], chess = 1, useRole = 'attack'
-      return getScore(list, chessPlayer);
+      const b = getScore(list, chessPlayer);
+      return b;
     })
     .reduce((a, b) => {
       return a + b;
@@ -143,54 +149,65 @@ const getDurationList = params => {
  */
 export const findBastPosition = ({ list, size, chessPlayer }) => {
   console.time('weijie');
+  list.test = {};
   handleDeep({
     list,
     size,
     chessPlayer,
     max: Number.MIN_SAFE_INTEGER,
     min: Number.MAX_SAFE_INTEGER,
-    deep: 2,
+    deep: 4,
   });
   console.timeEnd('weijie');
+  console.log(list);
 };
 
 /**
  * 偶数挑最小的， 基数挑最大的
  */
-let i = 0;
 const handleDeep = ({ list, size, chessPlayer, max, min, deep }) => {
-  i++;
+  if (!list.test[deep]) {
+    list.test[deep] = [];
+  }
   const scoreList = getScoreList({
     list,
     size,
     chessPlayer,
   });
-
+  console.log(list[deep]);
+  list.test[deep].push(scoreList);
+  let localMax = Number.MIN_SAFE_INTEGER;
+  let localMin = Number.MAX_SAFE_INTEGER;
+  injectScore !== Number.MIN_SAFE_INTEGER;
   const isEven = !(deep % 2);
   const compare = !isEven ? Math.max : Math.min;
   const injectScore = isEven ? max : min;
-  const hasValue =
-    injectScore !== Number.MAX_SAFE_INTEGER &&
-    injectScore !== Number.MIN_SAFE_INTEGER;
+  const hasValue = injectScore !== localMax && injectScore !== localMin;
 
   if (deep <= 0) {
-    console.log(max, min);
-  }
-
-  if (deep <= 0) {
+    // debugger;
     if (!hasValue) {
-      let value = isEven ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+      let value = isEven ? localMin : localMax;
       scoreList.forEach(item => {
         value = compare(item.score, value);
       });
+
+      console.log(scoreList, deep, value);
+
       return value;
     } else {
       let value;
       for (let i = 0; i < scoreList.length; i++) {
         value = compare(injectScore, scoreList[i].score);
-        if ((!isEven && value > injectScore) || (isEven && value < injectScore))
+        if (
+          (!isEven && value > injectScore) ||
+          (isEven && value < injectScore)
+        ) {
+          console.log(scoreList, deep, i, value);
           return value;
+        }
       }
+      console.log(scoreList, deep, value);
       return value;
     }
   }
@@ -202,24 +219,30 @@ const handleDeep = ({ list, size, chessPlayer, max, min, deep }) => {
       list,
       size,
       chessPlayer: 3 - chessPlayer,
-      max,
-      min,
+      max: localMax,
+      min: localMin,
       deep: deep - 1,
     });
 
     list[index] = empty;
 
     if (!isEven) {
-      if (hasValue && score > injectScore) return score;
-      max = Math.max(score, max);
+      if (hasValue && score > injectScore) {
+        console.log(scoreList, deep, i, score);
+        return score;
+      }
+      localMax = Math.max(score, localMax);
     } else {
-      if (hasValue && score < injectScore) return score;
-      min = Math.min(score, min);
+      if (hasValue && score < injectScore) {
+        console.log(scoreList, deep, i, score);
+        return score;
+      }
+      localMin = Math.min(score, localMin);
     }
   }
-  return !isEven ? min : min;
+  console.log(scoreList, deep, '--', !isEven ? max : min);
+  return !isEven ? localMax : localMin;
 };
-
 // 获取最大分数
 const getScoreList = ({ list, size, chessPlayer }) => {
   const scoreList = [];
@@ -240,19 +263,21 @@ const getScoreList = ({ list, size, chessPlayer }) => {
     }
   });
 
-  return scoreList;
+  // return scoreList.sort((a, b) => b.score - a.score);
+  console.log(scoreList.sort((a, b) => b.score - a.score));
+  return scoreList.slice(0, 2);
 };
 
 const a = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 2, 1, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -262,4 +287,3 @@ const a = [
 ].flat(1);
 
 console.log(findBastPosition({ list: a, size: 15, chessPlayer: 2 }));
-console.log(i);

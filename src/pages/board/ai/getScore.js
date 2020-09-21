@@ -317,7 +317,8 @@ const getByScore = (list = [], chess = 1, useRole = 'attack') => {
 };
 
 const getScore = (list = [], chess = 1) => {
-  const score = getByScore(list, chess, attack);
+  const score =
+    getByScore(list, chess, attack) + getByScore(list, 3 - chess, attack);
   return chess === 2 ? score : 0 - score;
 };
 /** test */
