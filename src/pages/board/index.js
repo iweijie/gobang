@@ -1,47 +1,58 @@
-import React, { useCallback } from 'react';
-import { connect, useDispatch } from 'umi';
-import { usePersistFn, useUpdateLayoutEffect } from 'ahooks';
+import React, { Component, useRef } from 'react';
+import { connect } from 'umi';
+import { usePersistFn, useUpdateLayoutEffect, useUpdateEffect } from 'ahooks';
 import Border from './Border/index';
 import { findPosition } from './ai/index';
 import config from './config';
 
-const Board = props => {
-  const { chessboard, chessPlayer } = props;
-  const dispatch = useDispatch();
+class Board extends Component {
+  constructor() {
+    super();
+    this.timerRef = void 0;
+  }
 
-  const emit = usePersistFn(index => {
-    if (chessboard[index]) return;
-    const newChessboard = [...chessboard];
-    newChessboard[index] = chessPlayer;
-
-    dispatch({
-      type: 'board/saveChessboard',
-      payload: newChessboard,
-    });
-
-    dispatch({
-      type: 'board/changeChessPlayer',
-      payload: 3 - chessPlayer,
-    });
-  });
-
-  const getPosition = usePersistFn(() => {
-    return findPosition({ list: chessboard, size: config.size, chessPlayer });
-  });
-
-  useUpdateLayoutEffect(() => {
+  componentDidUpdate(preProps) {
+    const { chessPlayer } = this.props;
     if (chessPlayer === 2) {
-      const a = getPosition();
+      this.timerRef = setTimeout(() => {
+        const a = this.getPosition();
+
+        this.timerRef = void 0;
+      }, 100);
 
       // a.sort((a, b) => {
       //   return b.score - a.score;
       // });
       // console.log(a);
     }
-  }, [chessPlayer, getPosition]);
+  }
 
-  return <Border emit={emit} />;
-};
+  render() {
+    return null;
+    return <Border emit={this.emit} />;
+  }
+
+  getPosition = () => {
+    const { chessboard, chessPlayer } = this.props;
+    return findPosition({ list: chessboard, size: config.size, chessPlayer });
+  };
+
+  emit = index => {
+    const { chessboard, chessPlayer, dispatch } = this.props;
+    const { timerRef } = this;
+    if (chessboard[index] || timerRef !== void 0) return;
+    const newChessboard = [...chessboard];
+    newChessboard[index] = chessPlayer;
+    dispatch({
+      type: 'board/saveChessboard',
+      payload: newChessboard,
+    });
+    dispatch({
+      type: 'board/changeChessPlayer',
+      payload: 3 - chessPlayer,
+    });
+  };
+}
 
 export default connect(({ board }) => ({
   chessboard: board.chessboard,

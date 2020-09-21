@@ -1,7 +1,7 @@
 import { scoreMap, attack, guard } from './constant';
 // 空棋子
 const empty = 0;
-const wall = -1;
+// const wall = -1;
 // 当前棋子
 let chessPieces = 1;
 let score = 0;
@@ -34,30 +34,6 @@ let role = 'attack';
 let direction = -1;
 
 const end = () => end;
-
-const getScore = (list = [], chess = 1) => {
-  return getByScore(list, chess, attack) + getByScore(list, 3 - chess, guard);
-};
-
-const getByScore = (list = [], chess = 1, useRole = 'attack') => {
-  role = useRole;
-  currentList = list;
-  chessPieces = chess;
-  let handle = getCenter;
-  index = centerInfo.point = Math.floor(list.length / 2);
-
-  while (handle !== end) {
-    index += direction;
-
-    // console.log("index:", index);
-
-    const s = list[index];
-    handle = handle(s);
-  }
-  const newScore = score;
-  initial();
-  return newScore;
-};
 
 const getCenter = s => {
   if (s === empty) {
@@ -322,7 +298,28 @@ const initial = () => {
 
   direction = -1;
 };
+const getByScore = (list = [], chess = 1, useRole = 'attack') => {
+  role = useRole;
+  currentList = list;
+  chessPieces = chess;
+  let handle = getCenter;
+  index = centerInfo.point = Math.floor(list.length / 2);
 
+  while (handle !== end) {
+    index += direction;
+
+    const s = list[index];
+    handle = handle(s);
+  }
+  const newScore = score;
+  initial();
+  return newScore;
+};
+
+const getScore = (list = [], chess = 1) => {
+  const score = getByScore(list, chess, attack);
+  return chess === 2 ? score : 0 - score;
+};
 /** test */
 // [
 //   // 5

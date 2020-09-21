@@ -38,38 +38,24 @@ export const scoreMap = {
   attack_4_2: 10000,
   attack_5: 500000,
 
-  // 防守
-  // guard_1_1: 49,
-  // guard_1_2: 499,
-  // guard_2_1: 499,
-  guard_1_1: 0,
-  guard_1_2: 0,
-  guard_2_1: 0,
-  guard_2_2: 100,
-  guard_3_1: 100,
-  // 双 三二 >
-  guard_3_2: 1000,
-  guard_4_1: 1000,
-  guard_4_2: 10000,
-  guard_5: 500000,
+  // // 防守
+  // // guard_1_1: 49,
+  // // guard_1_2: 499,
+  // // guard_2_1: 499,
+  // guard_1_1: 0,
+  // guard_1_2: 0,
+  // guard_2_1: 0,
+  // guard_2_2: 100,
+  // guard_3_1: 100,
+  // // 双 三二 >
+  // guard_3_2: 1000,
+  // guard_4_1: 1000,
+  // guard_4_2: 10000,
+  // guard_5: 500000,
 };
 
 export const attack = 'attack';
 export const guard = 'guard';
-
-// 斜线
-
-/**
- * 0：空位子
- * 1：己方棋子
- * 2：敌方棋子
- */
-const diagonal = {
-  //  54321012345
-  1: '00001000000',
-  1: '00011000000',
-  1: '00111000000',
-  1: '01110000000',
-  1: '01111000000',
-  1: '00000000000',
-};
+export const empty = 0;
+export const hum = 1;
+export const compute = 2;

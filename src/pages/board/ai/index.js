@@ -1,7 +1,8 @@
 import { guard, attack } from './constant';
 import config from '../config';
-import getScore from './fsm';
-import { sortBy, times } from 'lodash';
+import getScore from './getScore';
+import { times } from 'lodash';
+import a from './negamax';
 const { space } = config;
 const getBoard = function() {
   return [
@@ -22,23 +23,6 @@ const getBoard = function() {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ];
 };
-const v = [
-  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-].flat(1);
 /**
  * 将索引转换为坐标
  * @param {Number} index 索引
@@ -100,7 +84,6 @@ const hasNeedMatch = (() => {
  * 寻找下一步落子的位子
  */
 export const findPosition = ({ list, size, chessPlayer }) => {
-  console.time('iweijie');
   const scoreList = getScoreList({
     list,
     size,
@@ -261,16 +244,5 @@ const getDurationList = params => {
       la.push(list[newRow * size + newCol]);
     }
   });
-
-  // console.log(index, [heng, shu, pie, la]);
   return [heng, shu, pie, la];
 };
-
-// findPosition({ list: b, size: 15, chessPlayer: 1 });
-// console.log(b[84]);
-// getDurationList({ list: b, size: 15, chessPlayer: 1, index: 84 });
-// getDurationList({ list: b, size: 15, chessPlayer: 1, index: 85 });
-// getDurationList({ list: b, size: 15, chessPlayer: 1, index: 86 });
-// getDurationList({ list: b, size: 15, chessPlayer: 1, index: 87 });
-// getDurationList({ list: b, size: 15, chessPlayer: 1, index: 88 });
-console.log(getDurationList({ list: v, size: 15, chessPlayer: 2, index: 8 }));
