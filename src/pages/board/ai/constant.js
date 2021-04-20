@@ -56,6 +56,7 @@ export const scoreMap = {
 
 export const attack = 'attack';
 export const guard = 'guard';
-export const empty = 0;
-export const hum = 1;
-export const compute = 2;
+export const EMPTY = 0;
+export const HUM = 1;
+export const COMPUTE = 2;
+export const WALL = -1;

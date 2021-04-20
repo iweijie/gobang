@@ -22,7 +22,7 @@ const WhitePiece = () => {
   );
 };
 
-const Board = props => {
+const Border = props => {
   const { chessboard, size, emit } = props;
 
   const handleDrop = useCallback(
@@ -66,4 +66,4 @@ const Board = props => {
   );
 };
 
-export default connect(({ board }) => board)(Board);
+export default Border;

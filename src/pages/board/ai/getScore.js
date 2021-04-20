@@ -33,6 +33,8 @@ let role = 'attack';
 
 let direction = -1;
 
+let scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
 const end = () => end;
 
 const getCenter = s => {
@@ -83,7 +85,6 @@ const interim = () => {
       return handleStretch;
     } else {
       return saveScore();
-      return end;
     }
   }
 };
@@ -147,11 +148,15 @@ const handleStretchLength = s => {
   }
 };
 
-const saveScore = () => {
-  // console.log(centerInfo);
-  // console.log(stretch);
-  const { leftBlock, rightBlock, leftIndex, rightIndex, length } = centerInfo;
+const handleSetScoreList = (t, i = 1) => {
+  const index = (t - 1) * 2 + (i === 2 ? 1 : 0);
+  if (scoreList[index] !== undefined) {
+    scoreList[index] += 1;
+  }
+};
 
+const saveScore = () => {
+  const { leftBlock, rightBlock, leftIndex, rightIndex, length } = centerInfo;
   let {
     leftStretch,
     rightStretch,
@@ -163,28 +168,36 @@ const saveScore = () => {
   } = stretch;
   rightStretchBlockIndex = Math.min(rightStretchBlockIndex, currentList.length);
   leftStretchBlockIndex = Math.max(leftStretchBlockIndex, 0);
-  let status = [];
+  // const status = scoreList;
   if (length >= 5) {
-    status.push(`${role}_5`);
+    // status.push(`${role}_5`);
+    handleSetScoreList(5);
   } else if (length === 4) {
     if (!leftBlock && !rightBlock) {
-      status.push(`${role}_4_2`);
+      // status.push(`${role}_4_2`);
+      handleSetScoreList(4, 2);
     } else if (!leftBlock || !rightBlock) {
-      status.push(`${role}_4_1`);
+      // status.push(`${role}_4_1`);
+      handleSetScoreList(4, 1);
     }
   } else if (length === 3) {
     if (!leftBlock && !rightBlock) {
       if (leftStretch && rightStretch) {
-        status.push(`${role}_4_2`);
+        // status.push(`${role}_4_2`);
+        handleSetScoreList(4, 2);
       } else if (leftStretch || rightStretch) {
-        status.push(`${role}_4_1`);
+        // status.push(`${role}_4_1`);
+        handleSetScoreList(4, 1);
       } else if (!isLeftStretchBlock && !isRightStretchBlock) {
-        status.push(`${role}_3_2`);
+        // status.push(`${role}_3_2`);
+        handleSetScoreList(3, 2);
       } else if (isLeftStretchBlock && isRightStretchBlock) {
         // 00201*10200
-        status.push(`${role}_3_1`);
+        // status.push(`${role}_3_1`);
+        handleSetScoreList(3, 1);
       } else {
-        status.push(`${role}_3_2`);
+        // status.push(`${role}_3_2`);
+        handleSetScoreList(3, 2);
       }
     } else if (!leftBlock || !rightBlock) {
       // 00021*10200
@@ -196,7 +209,8 @@ const saveScore = () => {
       if (blockLength >= 5) {
         const currentStretchLen = leftBlock ? rightStretch : leftStretch;
 
-        status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
+        // status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
+        handleSetScoreList(Math.min(4, length + currentStretchLen), 1);
       }
     }
   } else if (length <= 2) {
@@ -206,39 +220,54 @@ const saveScore = () => {
           if (!isLeftStretchBlock && !isRightStretchBlock) {
             // 00101*01000
             if (leftStretch === rightStretch && leftStretch > 0) {
-              status.push(`${role}_${Math.min(4, length + leftStretch)}_2`);
+              // status.push(`${role}_${Math.min(4, length + leftStretch)}_2`);
+              handleSetScoreList(Math.min(4, length + leftStretch), 2);
             } else {
-              status.push(
-                `${role}_${Math.min(
-                  4,
-                  length + Math.max(leftStretch, rightStretch),
-                )}_1`,
+              // status.push(
+              //   `${role}_${Math.min(
+              //     4,
+              //     length + Math.max(leftStretch, rightStretch),
+              //   )}_1`,
+              // );
+              handleSetScoreList(
+                Math.min(4, length + Math.max(leftStretch, rightStretch)),
+                1,
               );
             }
           } else {
-            status.push(
-              `${role}_${Math.min(
-                4,
-                length + Math.max(leftStretch, rightStretch),
-              )}_1`,
+            // status.push(
+            //   `${role}_${Math.min(
+            //     4,
+            //     length + Math.max(leftStretch, rightStretch),
+            //   )}_1`,
+            // );
+            handleSetScoreList(
+              Math.min(4, length + Math.max(leftStretch, rightStretch)),
+              1,
             );
           }
         } else if (!leftStretch && !rightStretch) {
           if (rightStretchBlockIndex - leftStretchBlockIndex - 1 > 6) {
-            status.push(`${role}_${length}_2`);
+            // status.push(`${role}_${length}_2`);
+            handleSetScoreList(length, 2);
           } else {
-            status.push(`${role}_${length}_1`);
+            // status.push(`${role}_${length}_1`);
+            handleSetScoreList(length, 1);
           }
         } else if (leftStretch || rightStretch) {
           // TODO 未区分
           //   2     8
           // 00201*01000
           // 00201*01200
-          status.push(
-            `${role}_${Math.min(
-              4,
-              length + Math.max(leftStretch, rightStretch),
-            )}_1`,
+          // status.push(
+          //   `${role}_${Math.min(
+          //     4,
+          //     length + Math.max(leftStretch, rightStretch),
+          //   )}_1`,
+          // );
+          handleSetScoreList(
+            Math.min(4, length + Math.max(leftStretch, rightStretch)),
+            1,
           );
         }
       }
@@ -251,14 +280,15 @@ const saveScore = () => {
 
       if (len >= 5) {
         const currentStretchLen = leftBlock ? rightStretch : leftStretch;
-        status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
+        // status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
+        handleSetScoreList(Math.min(4, length + currentStretchLen), 1);
       }
     }
   }
   // console.log(status.toString());
-  score = status.reduce((calcScore, key) => {
-    return calcScore + scoreMap[key];
-  }, 0);
+  // score = status.reduce((calcScore, key) => {
+  //   return calcScore + scoreMap[key];
+  // }, 0);
 
   return end;
 };
@@ -298,6 +328,7 @@ const initial = () => {
 
   direction = -1;
 };
+
 const getByScore = (list = [], chess = 1, useRole = 'attack') => {
   role = useRole;
   currentList = list;
@@ -316,80 +347,86 @@ const getByScore = (list = [], chess = 1, useRole = 'attack') => {
   return newScore;
 };
 
+const computeScore = scoreList => {
+  return 1;
+};
+
 const getScore = (list = [], chess = 1) => {
-  const score =
-    getByScore(list, chess, attack) + getByScore(list, 3 - chess, attack);
-  return chess === 2 ? score : 0 - score;
+  scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  list.forEach(item => {
+    getByScore(item, chess, attack);
+  });
+
+  return computeScore(scoreList);
 };
 /** test */
 // [
-//   // 5
-//   [0, 0, 1, 1, 1, '*', 1, 0, 0, 0, 0],
-//   [0, 0, 1, 1, 1, '*', 1, 1, 0, 0, 0],
-//   [0, 0, 2, 1, 1, '*', 1, 1, 2, 0, 0],
-//   // 4
-//   [0, 0, 0, 0, 1, '*', 1, 1, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 1, 0, 0, 0],
-//   [0, 0, 0, 0, 1, '*', 1, 1, 2, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 1, 2, 0, 0],
-//   [0, 0, 1, 0, 1, '*', 1, 1, 0, 0, 0],
-//   [0, 2, 1, 0, 1, '*', 1, 1, 0, 0, 0],
-//   [0, 0, 1, 0, 1, '*', 1, 1, 2, 0, 0],
-//   [0, 2, 1, 0, 1, '*', 1, 1, 2, 0, 0],
-//   // 3
-//   [0, 0, 0, 0, 1, '*', 1, 0, 0, 0, 0],
-//   // -------
-//   [0, 0, 0, 0, 1, '*', 1, 0, 2, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 1, 0, 0, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-//   // -------
-//   [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 0, 2, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 0, 0, 2, 0],
-//   [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 1, 2, 2, 0, 0],
-//   [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
-//   [0, 2, 0, 0, 1, '*', 1, 0, 0, 2, 0],
-//   [0, 0, 2, 0, 1, '*', 1, 2, 0, 0, 0],
-//   [0, 2, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-//   [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
-//   // 2
-//   [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 1, '*', 0, 0, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 0, 2, 0, 0, 0],
-//   [0, 0, 2, 0, 1, '*', 0, 1, 2, 0, 0],
-//   [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
-//   [0, 2, 1, 0, 1, '*', 0, 1, 2, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 0, 1, 0, 0, 0],
-//   [0, 0, 0, 2, 1, '*', 0, 1, 1, 1, 0],
-//   // 1
-//   [0, 0, 0, 0, 0, '*', 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 2, '*', 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 2, '*', 2, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 2, '*', 0, 1, 0, 0, 0],
-//   [0, 0, 0, 0, 2, '*', 0, 1, 1, 0, 0],
-//   [0, 0, 0, 0, 2, '*', 0, 1, 1, 1, 0],
-//   [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-//   [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-//   [0, 0, 0, 1, 0, '*', 0, 1, 1, 2, 0],
-//   [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
-//   [0, 0, 0, 2, 0, '*', 0, 0, 2, 0, 0],
-//   [0, 0, 0, 2, 0, '*', 0, 0, 0, 0, 0],
-//   [0, 0, 0, 2, 0, '*', 0, 1, 1, 0, 0],
+// 5
+// [0, 0, 0, 0, 1, '*', 1, 1, 1, 0, 0],
+// [0, 0, 1, 1, 1, '*', 1, 0, 0, 0, 0],
+// [0, 0, 1, 1, 1, '*', 1, 1, 0, 0, 0],
+// [0, 0, 1, 1, 1, '*', 1, 1, 2, 0, 0],
+// [0, 0, 2, 1, 1, '*', 1, 1, 2, 0, 0],
+// 4-2
+// [0, 0, 1, 0, 1, '*', 1, 0, 1, 0, 0],
+// [0, 0, 0, 0, 1, '*', 1, 1, 0, 0, 0],
+// [0, 0, 0, 0, 0, '*', 1, 1, 1, 0, 0],
+// 4-1
+// [0, 0, 0, 2, 1, '*', 1, 1, 0, 0, 0],
+// [0, 0, 0, 0, 1, '*', 1, 1, 2, 0, 0],
+// [0, 0, 2, 0, 1, '*', 1, 1, 2, 0, 0],
+// [0, 2, 1, 0, 1, '*', 1, 1, 2, 0, 0],
+// [0, 2, 1, 1, 1, '*', 0, 2, 0, 0, 0],
+// 3-2
+// [0, 0, 0, 0, 1, '*', 1, 0, 0, 0, 0],
+// [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
+// [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
+// [0, 0, 1, 0, 1, '*', 0, 1, 0, 2, 0],
+// 3-1
+// [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
+// [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+// [0, 0, 0, 2, 1, '*', 1, 0, 0, 2, 0],
+// [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
+// [0, 2, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+// [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+// [0, 0, 2, 0, 1, '*', 0, 1, 2, 0, 0],
+// [0, 2, 1, 0, 1, '*', 0, 1, 2, 0, 0],
+// [0, 0, 0, 2, 1, '*', 0, 1, 0, 0, 0],
+// 3-0
+// [0, 0, 2, 0, 1, '*', 1, 2, 0, 0, 0],
+// [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
+// [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
+// 2-2
+// [0, 0, 0, 0, 1, '*', 0, 0, 0, 0, 0],
+// [0, 2, 0, 0, 1, '*', 0, 0, 0, 2, 0],
+// [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
+// 2-1
+// [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+// [0, 0, 0, 2, 1, '*', 0, 0, 0, 0, 0],
+// [0, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+// [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+// [0, 0, 0, 0, 2, '*', 0, 1, 0, 0, 0],
+// [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
+// 2-0
+// [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+// [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
+// [0, 0, 2, 0, 1, '*', 0, 2, 0, 0, 0],
+// [0, 0, 2, 0, 1, '*', 2, 0, 0, 0, 0],
+// [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
+// [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+// 1-2
+// [0, 0, 0, 0, 0, '*', 0, 0, 0, 0, 0],
+// [0, 0, 0, 2, 0, '*', 0, 0, 0, 0, 0],
+// 1-1
+// [0, 0, 0, 0, 2, '*', 0, 0, 0, 0, 0],
+// [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
+// [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
+// 1-0
+// [0, 0, 0, 2, 0, '*', 0, 0, 2, 0, 0],
 // ].forEach(item => {
-//   console.log(getScore(item));
+//   getByScore(item, 1);
 // });
+
+console.log(scoreList);
 
 export default getScore;
