@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash';
 import { scoreMap, attack, guard } from './constant';
 // 空棋子
 const empty = 0;
@@ -32,7 +33,8 @@ let index = 0;
 let role = 'attack';
 
 let direction = -1;
-
+// 1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
+const scoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 100000];
 let scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const end = () => end;
@@ -285,10 +287,6 @@ const saveScore = () => {
       }
     }
   }
-  // console.log(status.toString());
-  // score = status.reduce((calcScore, key) => {
-  //   return calcScore + scoreMap[key];
-  // }, 0);
 
   return end;
 };
@@ -300,28 +298,25 @@ const handleTurnDirection = () => {
 
 const initial = () => {
   score = 0;
-  centerInfo = {
-    point: 0,
-    length: 0,
-    leftIndex: 0,
-    rightIndex: 0,
-    leftBlock: false,
-    rightBlock: false,
-  };
 
-  currentList = [];
+  centerInfo.point = 0;
+  centerInfo.length = 0;
+  centerInfo.leftIndex = 0;
+  centerInfo.rightIndex = 0;
+  centerInfo.leftBlock = false;
+  centerInfo.rightBlock = false;
+
+  currentList = null;
   // 左右 space 信息
-  stretch = {
-    stretchLength: 0,
-    leftSpace: false,
-    rightSpace: false,
-    leftStretch: 0,
-    rightStretch: 0,
-    isLeftStretchBlock: false,
-    isRightStretchBlock: false,
-    leftStretchBlockIndex: 0,
-    rightStretchBlockIndex: 10,
-  };
+  stretch.stretchLength = 0;
+  stretch.leftSpace = false;
+  stretch.rightSpace = false;
+  stretch.leftStretch = 0;
+  stretch.rightStretch = 0;
+  stretch.isLeftStretchBlock = false;
+  stretch.isRightStretchBlock = false;
+  stretch.leftStretchBlockIndex = 0;
+  stretch.rightStretchBlockIndex = 10;
   // index
   index = 0;
   role = 'attack';
@@ -335,28 +330,41 @@ const getByScore = (list = [], chess = 1, useRole = 'attack') => {
   chessPieces = chess;
   let handle = getCenter;
   index = centerInfo.point = Math.floor(list.length / 2);
-
   while (handle !== end) {
     index += direction;
-
     const s = list[index];
     handle = handle(s);
   }
-  const newScore = score;
   initial();
-  return newScore;
 };
 
+/**
+ *
+ * @param {*} scoreList
+ * @returns
+ */
+
 const computeScore = scoreList => {
-  return 1;
+  // 1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
+
+  // 成五
+  // if (scoreList[8]) return Number.MAX_SAFE_INTEGER;
+  // if (scoreList[7]) return 1;
+  let num = 0;
+  for (let i = 0; i < scoreList.length; i++) {
+    num += scoreListTables[i] * scoreList[i];
+  }
+
+  return num;
 };
 
 const getScore = (list = [], chess = 1) => {
+  //
   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   list.forEach(item => {
+    if (isEmpty(item)) return;
     getByScore(item, chess, attack);
   });
-
   return computeScore(scoreList);
 };
 /** test */
@@ -426,7 +434,5 @@ const getScore = (list = [], chess = 1) => {
 // ].forEach(item => {
 //   getByScore(item, 1);
 // });
-
-console.log(scoreList);
 
 export default getScore;

@@ -44,12 +44,15 @@ const Board = props => {
 
   useUpdateEffect(() => {
     const { chessboard, chessPlayer, isAi } = state;
-    console.log('----');
     // 通常是白子先行，但是玩家可以选择先手 后手
     // TODO 需要修改， 先写死
     if (isAi && chessPlayer === 1) return;
 
-    return findPosition({ list: chessboard, size: config.size, chessPlayer });
+    findPosition({
+      list: chessboard,
+      size: config.size,
+      chessPlayer,
+    });
   }, [chessPlayer]);
 
   const emit = useCallback(

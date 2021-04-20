@@ -10,4 +10,9 @@ const getPositionFromIndex = (index, size) => {
   return [row, col];
 };
 
+export const getIndexForPosition = (position, size) => {
+  const [row, col] = position;
+  return row * size + col;
+};
+
 export default getPositionFromIndex;
