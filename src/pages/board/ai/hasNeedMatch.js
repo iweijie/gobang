@@ -25,7 +25,8 @@ const hasNeedMatch = params => {
     const newCol = col + i - center;
     if (
       (newCol >= 0 || newCol < size) &&
-      list[getIndexForPosition([row, newCol], size)] === chessPlayer
+      (list[getIndexForPosition([row, newCol], size)] === chessPlayer ||
+        list[getIndexForPosition([row, newCol], size)] === 3 - chessPlayer)
     )
       return 1;
   }
@@ -36,7 +37,8 @@ const hasNeedMatch = params => {
     const newRow = row + i - center;
     if (
       (newRow >= 0 || newRow < size) &&
-      list[getIndexForPosition([newRow, col], size)] === chessPlayer
+      (list[getIndexForPosition([newRow, col], size)] === chessPlayer ||
+        list[getIndexForPosition([newRow, col], size)] === 3 - chessPlayer)
     )
       return 2;
   }
@@ -50,7 +52,8 @@ const hasNeedMatch = params => {
     if (
       (newRow >= 0 || newRow < size) &&
       (newCol >= 0 || newCol < size) &&
-      list[getIndexForPosition([newRow, newCol], size)] === chessPlayer
+      (list[getIndexForPosition([newRow, newCol], size)] === chessPlayer ||
+        list[getIndexForPosition([newRow, newCol], size)] === 3 - chessPlayer)
     )
       return 3;
   }
@@ -63,7 +66,8 @@ const hasNeedMatch = params => {
     if (
       (newRow >= 0 || newRow < size) &&
       (newCol >= 0 || newCol < size) &&
-      list[getIndexForPosition([newRow, newCol], size)] === chessPlayer
+      (list[getIndexForPosition([newRow, newCol], size)] === chessPlayer ||
+        list[getIndexForPosition([newRow, newCol], size)] === 3 - chessPlayer)
     )
       return 4;
   }

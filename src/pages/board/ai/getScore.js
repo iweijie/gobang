@@ -2,7 +2,9 @@ import { isEmpty } from 'lodash';
 import { scoreMap, attack, guard } from './constant';
 // 空棋子
 const empty = 0;
-// const wall = -1;
+
+let enemy = 0;
+
 // 当前棋子
 let chessPieces = 1;
 let score = 0;
@@ -34,9 +36,11 @@ let role = 'attack';
 
 let direction = -1;
 // 1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
-const scoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 100000];
+const scoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 1000000];
 let scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
+//                           1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
+// const sealScoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 100000];
+let sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 const end = () => end;
 
 const getCenter = s => {
@@ -152,8 +156,11 @@ const handleStretchLength = s => {
 
 const handleSetScoreList = (t, i = 1) => {
   const index = (t - 1) * 2 + (i === 2 ? 1 : 0);
-  if (scoreList[index] !== undefined) {
+
+  if (enemy === 0 && scoreList[index] !== undefined) {
     scoreList[index] += 1;
+  } else if (enemy === 1 && sealScoreList[index] !== undefined) {
+    sealScoreList[index] += 1;
   }
 };
 
@@ -324,8 +331,7 @@ const initial = () => {
   direction = -1;
 };
 
-const getByScore = (list = [], chess = 1, useRole = 'attack') => {
-  role = useRole;
+const getByScore = (list = [], chess = 1) => {
   currentList = list;
   chessPieces = chess;
   let handle = getCenter;
@@ -358,14 +364,18 @@ const computeScore = scoreList => {
   return num;
 };
 
-const getScore = (list = [], chess = 1) => {
-  //
+const getScore = (list = [], chess = 1, negation = false) => {
   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   list.forEach(item => {
     if (isEmpty(item)) return;
-    getByScore(item, chess, attack);
+    enemy = 0;
+    getByScore(item, chess);
+    enemy = 1;
+    getByScore(item, 3 - chess);
   });
-  return computeScore(scoreList);
+
+  return computeScore(scoreList) + computeScore(sealScoreList);
 };
 /** test */
 // [
@@ -430,9 +440,9 @@ const getScore = (list = [], chess = 1) => {
 // [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
 // [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
 // 1-0
-// [0, 0, 0, 2, 0, '*', 0, 0, 2, 0, 0],
+//   [-1, 0, 0, 0, 0, '*', 2, 2, 2, 0, 0],
 // ].forEach(item => {
-//   getByScore(item, 1);
+//   console.log(getScore([item], 1));
 // });
 
 export default getScore;

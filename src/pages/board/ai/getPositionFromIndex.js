@@ -12,6 +12,9 @@ const getPositionFromIndex = (index, size) => {
 
 export const getIndexForPosition = (position, size) => {
   const [row, col] = position;
+
+  if (row < 0 || row >= size || col < 0 || col >= size) return -1;
+
   return row * size + col;
 };
 

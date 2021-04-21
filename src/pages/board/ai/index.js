@@ -7,29 +7,99 @@ import { forEach } from 'lodash';
 
 const { space } = config;
 
+function compose(...funcs) {
+  if (funcs.length === 0) {
+    return arg => arg;
+  }
+
+  if (funcs.length === 1) {
+    return funcs[0];
+  }
+
+  return funcs.reduce((a, b) => (...args) => a(b(...args)));
+}
+
+const transitional = (before, handle, after) => {
+  return (...rst) => {
+    before();
+    const result = handle(...rst);
+    after();
+    return result;
+  };
+};
+
+const getCurrentScore = (isMax, headNode) => {
+  return isMax ? headNode.alpha : headNode.beta;
+};
+
 // 获取最大分数
-const getScoreList = ({ list, size, chessPlayer }) => {
-  const scoreList = [];
-  list.forEach((state, index) => {
-    if (state) return;
+const getScoreList = ({ list, size, deep, score = 0, chessPlayer }) => {
+  const a = [];
+  const isMax = deep % 2 === 0;
+  const headNode = {
+    value: isMax ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER,
+    // 极大
+    alpha: Number.MIN_SAFE_INTEGER,
+    // 极小
+    beta: Number.MAX_SAFE_INTEGER,
+    // 索引
+    indexs: 0,
+  };
+  for (let i = 0; i < list.length; i++) {
+    // 已存在的棋子;
+    if (list[i]) continue;
+    // 判断周围是否具有相同棋子的点位
+    const type = hasNeedMatch({ list, index: i, size, chessPlayer });
+    if (!type) continue;
 
-    const type = hasNeedMatch({ list, index, size, chessPlayer });
-    if (!type) return;
-    const score = handleGetScoreByPosition({
-      list,
-      index,
-      size,
-      chessPlayer,
-      type,
-    });
+    let score;
 
-    scoreList.push({
-      index,
-      // position: getPositionFromIndex(index, size).toString(),
-      score,
-    });
-  });
-  return scoreList;
+    if (deep > 0) {
+      // 计算当前点位分数
+
+      list[i] = chessPlayer;
+
+      const { value } = getScoreList({
+        list,
+        size,
+        // score,
+        deep: deep - 1,
+        chessPlayer: 3 - chessPlayer,
+      });
+      console.log(deep, i, value);
+      list[i] = 0;
+
+      score = value;
+    } else {
+      score = handleGetScoreByPosition({
+        list,
+        index: i,
+        size,
+        // negation: !isMax,
+        chessPlayer,
+        type,
+      });
+    }
+
+    console.log('---', chessPlayer, i, score);
+    if (!isMax) {
+      if (headNode.value > score) {
+        headNode.value = score;
+        headNode.indexs = [i];
+      } else if (headNode.value === score) {
+        headNode.indexs.push(i);
+      }
+    } else {
+      if (headNode.value < score) {
+        headNode.value = score;
+        headNode.indexs = [i];
+      } else if (headNode.value === score) {
+        headNode.indexs.push(i);
+      }
+    }
+  }
+
+  return headNode;
 };
 
 /**
@@ -37,61 +107,22 @@ const getScoreList = ({ list, size, chessPlayer }) => {
  */
 
 const handleGetScoreByPosition = params => {
-  const { chessPlayer } = params;
+  const { chessPlayer, negation } = params;
 
-  return getScore(getDurationList(params), chessPlayer);
+  return getScore(getDurationList(params), chessPlayer, negation);
 };
 
 /**
  * 寻找下一步落子的位子
  */
 export const findPosition = ({ list, size, chessPlayer }) => {
-  const scoreList = getScoreList({
-    list,
-    size,
-    chessPlayer,
-  });
-  console.log(scoreList);
   console.time('iweijie');
-  const a = handleDeep({
+  const { value, indexs } = getScoreList({
     list,
-    scoreList: scoreList,
     size,
     chessPlayer,
-    countScore: 0,
-    deep: 2 || config.deep,
+    deep: 2,
   });
-  console.log(a);
+  console.log(value, indexs);
   console.timeEnd('iweijie');
-};
-// deep 6
-
-const handleDeep = ({
-  list,
-  size,
-  scoreList,
-  chessPlayer,
-  countScore = 0,
-  deep,
-}) => {
-  if (deep && deep < 0) return scoreList;
-  return scoreList.map(item => {
-    const { index, score } = item;
-    const newList = [...list];
-    newList[index] = chessPlayer;
-    const newScoreList = getScoreList({
-      list: newList,
-      size,
-      chessPlayer: 3 - chessPlayer,
-      deep: config.deep - 1,
-    });
-    return handleDeep({
-      list: newList,
-      scoreList: newScoreList,
-      size,
-      chessPlayer: 3 - chessPlayer,
-      countScore: countScore + score,
-      deep: deep - 1,
-    });
-  });
 };

@@ -15,13 +15,31 @@ import config from './config';
 
 const Board = props => {
   const [state, setState] = useSetState(() => {
+    const a = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ].flat(1);
+
     return {
       // 棋盘大小  15 * 15
       size: config.size,
       // 递归深度
       deep: config.deep,
       // 棋盘
-      chessboard: times(Math.pow(config.size, 2), index => 0),
+      chessboard: a || times(Math.pow(config.size, 2), index => 0),
       /**
        * 当前棋手  -- 白子:1, 黑子:2
        */
@@ -46,7 +64,7 @@ const Board = props => {
     const { chessboard, chessPlayer, isAi } = state;
     // 通常是白子先行，但是玩家可以选择先手 后手
     // TODO 需要修改， 先写死
-    if (isAi && chessPlayer === 1) return;
+    if (!isAi) return;
 
     findPosition({
       list: chessboard,
@@ -72,6 +90,14 @@ const Board = props => {
     },
     [state],
   );
+
+  useEffect(() => {
+    findPosition({
+      list: chessboard,
+      size: 15,
+      chessPlayer: 1,
+    });
+  }, []);
 
   return <Border emit={emit} chessboard={state.chessboard} size={state.size} />;
 };
