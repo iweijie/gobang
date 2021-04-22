@@ -60,3 +60,6 @@ export const EMPTY = 0;
 export const HUM = 1;
 export const COMPUTE = 2;
 export const WALL = -1;
+
+export const MAX = Number.MAX_SAFE_INTEGER;
+export const MIN = Number.MIN_SAFE_INTEGER;

@@ -1,4 +1,4 @@
-import { EMPTY, HUM, COMPUTE, WALL } from './constant';
+import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN } from './constant';
 import getDurationList from './getDurationList';
 import config from '../config';
 import hasNeedMatch from './hasNeedMatch';
@@ -6,6 +6,8 @@ import getScore from './getScore';
 import { forEach } from 'lodash';
 
 const { space } = config;
+
+let heads = [];
 
 function compose(...funcs) {
   if (funcs.length === 0) {
@@ -33,45 +35,40 @@ const getCurrentScore = (isMax, headNode) => {
 };
 
 // 获取最大分数
-const getScoreList = ({ list, size, deep, score = 0, chessPlayer }) => {
-  const a = [];
+const getScoreList = ({
+  list,
+  size,
+  deep,
+  score: parentScore = 0,
+  chessPlayer,
+  _path = '',
+}) => {
   const isMax = deep % 2 === 0;
   const headNode = {
-    value: isMax ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER,
+    value: isMax ? MIN : MAX,
     // 极大
     alpha: Number.MIN_SAFE_INTEGER,
     // 极小
     beta: Number.MAX_SAFE_INTEGER,
     // 索引
-    indexs: 0,
+    indexs: [],
+    // 路径
   };
+
+  heads[deep] = headNode;
+
+  const a = [];
   for (let i = 0; i < list.length; i++) {
     // 已存在的棋子;
     if (list[i]) continue;
     // 判断周围是否具有相同棋子的点位
     const type = hasNeedMatch({ list, index: i, size, chessPlayer });
     if (!type) continue;
-
     let score;
 
-    if (deep > 0) {
+    if (deep > 1) {
       // 计算当前点位分数
-
-      list[i] = chessPlayer;
-
-      const { value } = getScoreList({
-        list,
-        size,
-        // score,
-        deep: deep - 1,
-        chessPlayer: 3 - chessPlayer,
-      });
-      console.log(deep, i, value);
-      list[i] = 0;
-
-      score = value;
-    } else {
-      score = handleGetScoreByPosition({
+      const pointScore = handleGetScoreByPosition({
         list,
         index: i,
         size,
@@ -79,37 +76,69 @@ const getScoreList = ({ list, size, deep, score = 0, chessPlayer }) => {
         chessPlayer,
         type,
       });
-    }
 
-    console.log('---', chessPlayer, i, score);
+      list[i] = chessPlayer;
+
+      const { value, indexs } = getScoreList({
+        list,
+        size,
+        score: pointScore + parentScore,
+        deep: deep - 1,
+        chessPlayer: 3 - chessPlayer,
+        _path: _path + '-' + i,
+      });
+
+      list[i] = 0;
+      score = value;
+
+      if (deep === 2) {
+        a.push({ i, score });
+      }
+    } else {
+      score = handleGetScoreByPosition({
+        list,
+        index: i,
+        size,
+        chessPlayer,
+        type,
+      });
+    }
+    const count = parentScore + score;
+
     if (!isMax) {
-      if (headNode.value > score) {
-        headNode.value = score;
+      if (headNode.value > count) {
+        headNode.value = count;
         headNode.indexs = [i];
-      } else if (headNode.value === score) {
+      } else if (headNode.value === count) {
         headNode.indexs.push(i);
       }
     } else {
-      if (headNode.value < score) {
-        headNode.value = score;
+      if (headNode.value < count) {
+        headNode.value = count;
         headNode.indexs = [i];
-      } else if (headNode.value === score) {
+      } else if (headNode.value === count) {
         headNode.indexs.push(i);
       }
     }
   }
 
+  if (deep === 2) {
+    console.log(a);
+  }
   return headNode;
 };
 
 /**
  * 计算当前位置得分
  */
-
 const handleGetScoreByPosition = params => {
   const { chessPlayer, negation } = params;
 
   return getScore(getDurationList(params), chessPlayer, negation);
+};
+
+const getOptionalPoints = () => {
+  return [];
 };
 
 /**
@@ -117,12 +146,16 @@ const handleGetScoreByPosition = params => {
  */
 export const findPosition = ({ list, size, chessPlayer }) => {
   console.time('iweijie');
+  console.log(chessPlayer);
+
+  heads = [];
   const { value, indexs } = getScoreList({
     list,
     size,
     chessPlayer,
     deep: 2,
   });
-  console.log(value, indexs);
+  console.log('iweijie', value, indexs);
   console.timeEnd('iweijie');
+  console.log(heads);
 };

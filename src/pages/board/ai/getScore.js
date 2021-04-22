@@ -35,11 +35,10 @@ let index = 0;
 let role = 'attack';
 
 let direction = -1;
-// 1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
-const scoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 1000000];
+//                        1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
+const scoreListTables = [0, 10, 10, 100, 100, 1000, 1000, 10000, 1000000];
+const sealScoreListTables = [0, 0, 0, 0, 50, 500, 500, 5000, 500000];
 let scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-//                           1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
-// const sealScoreListTables = [1, 10, 10, 100, 100, 1000, 1000, 10000, 100000];
 let sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 const end = () => end;
 
@@ -350,17 +349,30 @@ const getByScore = (list = [], chess = 1) => {
  * @returns
  */
 
-const computeScore = scoreList => {
-  // 1-1, 1-2, 2-1, 2-2, 3-1, 3-2, 4-1, 4-2, 5
+const computeScore = (scoreList, sealScoreList) => {
+  // // 成五
+  // if (scoreList[8]) return 10000000;
+  // // 敌方成五
+  // if (sealScoreList[8]) return 8000000;
+  // // 活四 或者 双死四
+  // if (scoreList[7] || scoreList[6] > 1) return 6000000;
+  // // 敌方活四 或者 双死四
+  // if (sealScoreList[7] || sealScoreList[6] > 1) return 4000000;
+  // // 双活三
+  // if (scoreList[5] > 1) return 2000000;
+  // // 死四
+  // if (scoreList[6]) return 1000000;
+  // // 死四
+  // if (scoreList[6]) return 1000000;
 
-  // 成五
-  // if (scoreList[8]) return Number.MAX_SAFE_INTEGER;
-  // if (scoreList[7]) return 1;
   let num = 0;
   for (let i = 0; i < scoreList.length; i++) {
     num += scoreListTables[i] * scoreList[i];
   }
 
+  for (let i = 0; i < sealScoreList.length; i++) {
+    num += sealScoreListTables[i] * sealScoreList[i];
+  }
   return num;
 };
 
@@ -375,7 +387,7 @@ const getScore = (list = [], chess = 1, negation = false) => {
     getByScore(item, 3 - chess);
   });
 
-  return computeScore(scoreList) + computeScore(sealScoreList);
+  return computeScore(scoreList, sealScoreList);
 };
 /** test */
 // [
@@ -400,6 +412,7 @@ const getScore = (list = [], chess = 1, negation = false) => {
 // [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
 // [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
 // [0, 0, 1, 0, 1, '*', 0, 1, 0, 2, 0],
+// [0, 0, 0, 0, 1, '*', 0, 1, 0, 2, 0],
 // 3-1
 // [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
 // [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
