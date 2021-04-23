@@ -10,7 +10,7 @@ import {
 } from 'ahooks';
 
 import Border from './Border/index';
-import { findPosition } from './ai/index';
+import { find } from './ai/index';
 import config from './config';
 
 const Board = props => {
@@ -35,7 +35,6 @@ const Board = props => {
 
     return {
       // 棋盘大小  15 * 15
-      size: config.size,
       // 递归深度
       deep: config.deep,
       // 棋盘
@@ -66,7 +65,7 @@ const Board = props => {
     // TODO 需要修改， 先写死
     if (!isAi) return;
 
-    findPosition({
+    find({
       list: chessboard,
       size: config.size,
       chessPlayer,
@@ -92,7 +91,7 @@ const Board = props => {
   );
 
   useEffect(() => {
-    findPosition({
+    find({
       list: chessboard,
       size: 15,
       chessPlayer: 1,

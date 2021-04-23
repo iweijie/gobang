@@ -330,7 +330,7 @@ const initial = () => {
   direction = -1;
 };
 
-const getByScore = (list = [], chess = 1) => {
+export const getByScore = (list = [], chess = 1) => {
   currentList = list;
   chessPieces = chess;
   let handle = getCenter;

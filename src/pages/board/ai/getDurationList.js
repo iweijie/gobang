@@ -1,6 +1,9 @@
 import getPositionFromIndex from './getPositionFromIndex';
 import { EMPTY, HUM, COMPUTE, WALL } from './constant';
 import { times } from 'lodash';
+import config from '../config';
+
+const { size } = config;
 
 /**
  * 所有点位计算共用一块空间
@@ -15,8 +18,8 @@ const emptyList = [];
  * 计算当前位置 (米) 一 丨 /  \ 四个方向的列表
  */
 const getDurationList = params => {
-  const { list, index, size, type, chessPlayer } = params;
-  const [row, col] = getPositionFromIndex(index, size);
+  const { list, index, type, chessPlayer } = params;
+  const [row, col] = getPositionFromIndex(index);
 
   const container = [];
 

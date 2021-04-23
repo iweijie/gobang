@@ -1,13 +1,8 @@
-import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN } from './constant';
+import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN, swapRoles } from './constant';
 import getDurationList from './getDurationList';
-import config from '../config';
 import hasNeedMatch from './hasNeedMatch';
 import getScore from './getScore';
-import { forEach } from 'lodash';
-
-const { space } = config;
-
-let heads = [];
+import evaluate from './evaluate';
 
 function compose(...funcs) {
   if (funcs.length === 0) {
@@ -21,111 +16,111 @@ function compose(...funcs) {
   return funcs.reduce((a, b) => (...args) => a(b(...args)));
 }
 
-const transitional = (before, handle, after) => {
-  return (...rst) => {
-    before();
-    const result = handle(...rst);
-    after();
-    return result;
-  };
-};
+// 获取最佳点位
+const getBastPoints = ({ list, deep, chessPlayer }) => {
+  let bast = MIN;
+  let points = [];
+  // 获取需要匹配的点位
+  const indexs = hasNeedMatch({ list, chessPlayer });
 
-const getCurrentScore = (isMax, headNode) => {
-  return isMax ? headNode.alpha : headNode.beta;
-};
+  for (let k = 0; k < indexs.length; k++) {
+    const index = indexs[k];
 
-// 获取最大分数
-const getScoreList = ({
-  list,
-  size,
-  deep,
-  score: parentScore = 0,
-  chessPlayer,
-  _path = '',
-}) => {
-  const isMax = deep % 2 === 0;
-  const headNode = {
-    value: isMax ? MIN : MAX,
-    // 极大
-    alpha: Number.MIN_SAFE_INTEGER,
-    // 极小
-    beta: Number.MAX_SAFE_INTEGER,
-    // 索引
-    indexs: [],
-    // 路径
-  };
+    list[index] = chessPlayer;
+    const score = min({
+      list,
+      index,
+      chessPlayer: swapRoles(chessPlayer),
+      deep: deep - 1,
+    });
+    list[index] = EMPTY;
 
-  heads[deep] = headNode;
-
-  const a = [];
-  for (let i = 0; i < list.length; i++) {
-    // 已存在的棋子;
-    if (list[i]) continue;
-    // 判断周围是否具有相同棋子的点位
-    const type = hasNeedMatch({ list, index: i, size, chessPlayer });
-    if (!type) continue;
-    let score;
-
-    if (deep > 1) {
-      // 计算当前点位分数
-      const pointScore = handleGetScoreByPosition({
-        list,
-        index: i,
-        size,
-        // negation: !isMax,
-        chessPlayer,
-        type,
-      });
-
-      list[i] = chessPlayer;
-
-      const { value, indexs } = getScoreList({
-        list,
-        size,
-        score: pointScore + parentScore,
-        deep: deep - 1,
-        chessPlayer: 3 - chessPlayer,
-        _path: _path + '-' + i,
-      });
-
-      list[i] = 0;
-      score = value;
-
-      if (deep === 2) {
-        a.push({ i, score });
-      }
-    } else {
-      score = handleGetScoreByPosition({
-        list,
-        index: i,
-        size,
-        chessPlayer,
-        type,
-      });
-    }
-    const count = parentScore + score;
-
-    if (!isMax) {
-      if (headNode.value > count) {
-        headNode.value = count;
-        headNode.indexs = [i];
-      } else if (headNode.value === count) {
-        headNode.indexs.push(i);
-      }
-    } else {
-      if (headNode.value < count) {
-        headNode.value = count;
-        headNode.indexs = [i];
-      } else if (headNode.value === count) {
-        headNode.indexs.push(i);
-      }
+    if (bast < score) {
+      bast = score;
+      points = [index];
+    } else if (bast === score) {
+      points.push(index);
     }
   }
 
-  if (deep === 2) {
-    console.log(a);
+  return points;
+};
+
+const min = ({ list, deep, index, chessPlayer }) => {
+  let bast = MAX;
+
+  let score = evaluate({ list });
+
+  if (deep <= 0 || score >= 100000) {
+    return score;
   }
-  return headNode;
+
+  /**
+   * TODO 如果直接能赢或者递归到最底层 那就返回当前点位
+   */
+
+  const indexs = hasNeedMatch({ list, chessPlayer });
+
+  for (let k = 0; k < indexs.length; k++) {
+    const index = indexs[k];
+
+    list[index] = chessPlayer;
+    score = max({
+      list,
+      index,
+      deep: deep - 1,
+      chessPlayer: swapRoles(chessPlayer),
+    });
+    list[index] = EMPTY;
+
+    if (bast > score) {
+      bast = score;
+    }
+  }
+
+  return bast;
+};
+
+const max = ({ list, index, deep, chessPlayer }) => {
+  let bast = MIN;
+
+  let score = handleGetScoreByPosition({
+    list,
+    index,
+    chessPlayer: swapRoles(chessPlayer),
+  });
+
+  if (deep <= 0 || score >= 100000) {
+    return score;
+  }
+
+  /**
+   * TODO 如果直接能赢或者递归到最底层 那就返回当前点位
+   */
+
+  if (deep >= 0) {
+    return score;
+  }
+
+  const indexs = hasNeedMatch({ list, chessPlayer });
+
+  for (let k = 0; k < indexs.length; k++) {
+    const index = indexs[k];
+
+    list[index] = chessPlayer;
+    score = min({
+      list,
+      deep: deep - 1,
+      chessPlayer: swapRoles(chessPlayer),
+    });
+    list[index] = EMPTY;
+
+    if (bast < score) {
+      bast = score;
+    }
+  }
+
+  return bast;
 };
 
 /**
@@ -137,25 +132,17 @@ const handleGetScoreByPosition = params => {
   return getScore(getDurationList(params), chessPlayer, negation);
 };
 
-const getOptionalPoints = () => {
-  return [];
-};
-
 /**
  * 寻找下一步落子的位子
  */
-export const findPosition = ({ list, size, chessPlayer }) => {
+export const find = ({ list, chessPlayer }) => {
   console.time('iweijie');
   console.log(chessPlayer);
-
-  heads = [];
-  const { value, indexs } = getScoreList({
+  const indexs = getBastPoints({
     list,
-    size,
     chessPlayer,
     deep: 2,
   });
-  console.log('iweijie', value, indexs);
+  console.log('iweijie', indexs);
   console.timeEnd('iweijie');
-  console.log(heads);
 };
