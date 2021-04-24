@@ -27,7 +27,7 @@ const getBastPoints = ({ list, deep, chessPlayer }) => {
     const index = indexs[k];
 
     list[index] = chessPlayer;
-    const { computeScore: score, humScore } = min({
+    const score = min({
       list,
       index,
       chessPlayer: swapRoles(chessPlayer),
@@ -49,7 +49,7 @@ const getBastPoints = ({ list, deep, chessPlayer }) => {
 const min = ({ list, deep, index, chessPlayer }) => {
   let bast = MAX;
 
-  let score = evaluate(list);
+  let score = evaluate({ list });
 
   if (deep <= 0 || score >= 100000) {
     return score;
@@ -84,7 +84,11 @@ const min = ({ list, deep, index, chessPlayer }) => {
 const max = ({ list, index, deep, chessPlayer }) => {
   let bast = MIN;
 
-  let score = evaluate(list);
+  let score = handleGetScoreByPosition({
+    list,
+    index,
+    chessPlayer: swapRoles(chessPlayer),
+  });
 
   if (deep <= 0 || score >= 100000) {
     return score;
@@ -120,16 +124,10 @@ const max = ({ list, index, deep, chessPlayer }) => {
 };
 
 /**
- * 寻找下一步落子的位子
+ * 计算当前位置得分
  */
-export const find = ({ list, chessPlayer }) => {
-  console.time('iweijie');
-  console.log(chessPlayer);
-  const indexs = getBastPoints({
-    list,
-    chessPlayer,
-    deep: 0,
-  });
-  console.log('iweijie', indexs);
-  console.timeEnd('iweijie');
+const handleGetScoreByPosition = params => {
+  const { chessPlayer, negation } = params;
+
+  return getScore(getDurationList(params), chessPlayer, negation);
 };

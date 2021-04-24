@@ -365,29 +365,30 @@ const computeScore = (scoreList, sealScoreList) => {
   // // 死四
   // if (scoreList[6]) return 1000000;
 
-  let num = 0;
-  for (let i = 0; i < scoreList.length; i++) {
-    num += scoreListTables[i] * scoreList[i];
+  // let num = 0;
+  for (let i = scoreList.length - 1; i >= 0; i--) {
+    if (scoreList[i]) return i;
   }
+  return 0;
 
-  for (let i = 0; i < sealScoreList.length; i++) {
-    num += sealScoreListTables[i] * sealScoreList[i];
-  }
-  return num;
+  // for (let i = 0; i < sealScoreList.length; i++) {
+  //   num += sealScoreListTables[i] * sealScoreList[i];
+  // }
+  // return num;
 };
 
 const getScore = (list = [], chess = 1, negation = false) => {
   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   list.forEach(item => {
     if (isEmpty(item)) return;
     enemy = 0;
     getByScore(item, chess);
-    enemy = 1;
-    getByScore(item, 3 - chess);
+    // enemy = 1;
+    // getByScore(item, 3 - chess);
   });
 
-  return computeScore(scoreList, sealScoreList);
+  return computeScore(scoreList);
 };
 /** test */
 // [

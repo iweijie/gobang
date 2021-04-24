@@ -93,12 +93,13 @@ const Board = props => {
   useEffect(() => {
     find({
       list: chessboard,
-      size: 15,
       chessPlayer: 1,
     });
   }, []);
 
-  return <Border emit={emit} chessboard={state.chessboard} size={state.size} />;
+  return (
+    <Border emit={emit} chessboard={state.chessboard} size={config.size} />
+  );
 };
 
 export default Board;

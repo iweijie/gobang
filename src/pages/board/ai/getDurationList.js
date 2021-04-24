@@ -21,73 +21,52 @@ const getDurationList = params => {
   const { list, index, type, chessPlayer } = params;
   const [row, col] = getPositionFromIndex(index);
 
-  const container = [];
+  const container = [heng, shu, pie, la];
 
   // 一
 
-  if (type > 1) {
-    container.push(emptyList);
-  } else {
-    times(11, index => {
-      const newCol = col + index - 5;
-      if (newCol < 0 || newCol >= size) {
-        heng[index] = WALL;
-      } else {
-        heng[index] = list[row * size + newCol];
-      }
-    });
-    container.push(heng);
-  }
+  times(11, index => {
+    const newCol = col + index - 5;
+    if (newCol < 0 || newCol >= size) {
+      heng[index] = WALL;
+    } else {
+      heng[index] = list[row * size + newCol];
+    }
+  });
 
   // 丨
 
-  if (type > 2) {
-    container.push(emptyList);
-  } else {
-    times(11, index => {
-      const newRow = row + index - 5;
-      if (newRow < 0 || newRow >= size) {
-        shu[index] = WALL;
-      } else {
-        shu[index] = list[newRow * size + col];
-      }
-    });
-    container.push(shu);
-  }
+  times(11, index => {
+    const newRow = row + index - 5;
+    if (newRow < 0 || newRow >= size) {
+      shu[index] = WALL;
+    } else {
+      shu[index] = list[newRow * size + col];
+    }
+  });
 
   // /
 
-  if (type > 3) {
-    container.push(emptyList);
-  } else {
-    times(11, index => {
-      const newRow = row + 5 - index;
-      const newCol = col + index - 5;
-      if (newRow < 0 || newRow >= size || newCol < 0 || newCol >= size) {
-        pie[index] = WALL;
-      } else {
-        pie[index] = list[newRow * size + newCol];
-      }
-    });
-    container.push(pie);
-  }
-
+  times(11, index => {
+    const newRow = row + 5 - index;
+    const newCol = col + index - 5;
+    if (newRow < 0 || newRow >= size || newCol < 0 || newCol >= size) {
+      pie[index] = WALL;
+    } else {
+      pie[index] = list[newRow * size + newCol];
+    }
+  });
   // \
 
-  if (type > 4) {
-    container.push(emptyList);
-  } else {
-    times(11, index => {
-      const newRow = row + index - 5;
-      const newCol = col + index - 5;
-      if (newRow < 0 || newRow >= size || newCol < 0 || newCol >= size) {
-        la[index] = WALL;
-      } else {
-        la[index] = list[newRow * size + newCol];
-      }
-    });
-    container.push(la);
-  }
+  times(11, index => {
+    const newRow = row + index - 5;
+    const newCol = col + index - 5;
+    if (newRow < 0 || newRow >= size || newCol < 0 || newCol >= size) {
+      la[index] = WALL;
+    } else {
+      la[index] = list[newRow * size + newCol];
+    }
+  });
   return container;
 };
 
