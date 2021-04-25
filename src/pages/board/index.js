@@ -1,6 +1,5 @@
 import React, { Component, useRef, useCallback, useEffect } from 'react';
-
-import { times } from 'lodash';
+import evaluate from './ai/evaluate';
 
 import {
   usePersistFn,
@@ -90,12 +89,12 @@ const Board = props => {
     [state],
   );
 
-  useEffect(() => {
-    find({
-      list: chessboard,
-      chessPlayer: 1,
-    });
-  }, []);
+  // useEffect(() => {
+  //   find({
+  //     list: chessboard,
+  //     chessPlayer: 1,
+  //   });
+  // }, []);
 
   return (
     <Border emit={emit} chessboard={state.chessboard} size={config.size} />

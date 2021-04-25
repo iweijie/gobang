@@ -153,14 +153,9 @@ const handleStretchLength = s => {
   }
 };
 
-const handleSetScoreList = (t, i = 1) => {
+const setScoreList = (t, i = 1) => {
   const index = (t - 1) * 2 + (i === 2 ? 1 : 0);
-
-  if (enemy === 0 && scoreList[index] !== undefined) {
-    scoreList[index] += 1;
-  } else if (enemy === 1 && sealScoreList[index] !== undefined) {
-    sealScoreList[index] += 1;
-  }
+  scoreList[index] += 1;
 };
 
 const saveScore = () => {
@@ -178,34 +173,26 @@ const saveScore = () => {
   leftStretchBlockIndex = Math.max(leftStretchBlockIndex, 0);
   // const status = scoreList;
   if (length >= 5) {
-    // status.push(`${role}_5`);
-    handleSetScoreList(5);
+    setScoreList(5);
   } else if (length === 4) {
     if (!leftBlock && !rightBlock) {
-      // status.push(`${role}_4_2`);
-      handleSetScoreList(4, 2);
+      setScoreList(4, 2);
     } else if (!leftBlock || !rightBlock) {
-      // status.push(`${role}_4_1`);
-      handleSetScoreList(4, 1);
+      setScoreList(4, 1);
     }
   } else if (length === 3) {
     if (!leftBlock && !rightBlock) {
       if (leftStretch && rightStretch) {
-        // status.push(`${role}_4_2`);
-        handleSetScoreList(4, 2);
+        setScoreList(4, 2);
       } else if (leftStretch || rightStretch) {
-        // status.push(`${role}_4_1`);
-        handleSetScoreList(4, 1);
+        setScoreList(4, 1);
       } else if (!isLeftStretchBlock && !isRightStretchBlock) {
-        // status.push(`${role}_3_2`);
-        handleSetScoreList(3, 2);
+        setScoreList(3, 2);
       } else if (isLeftStretchBlock && isRightStretchBlock) {
         // 00201*10200
-        // status.push(`${role}_3_1`);
-        handleSetScoreList(3, 1);
+        setScoreList(3, 1);
       } else {
-        // status.push(`${role}_3_2`);
-        handleSetScoreList(3, 2);
+        setScoreList(3, 2);
       }
     } else if (!leftBlock || !rightBlock) {
       // 00021*10200
@@ -217,8 +204,7 @@ const saveScore = () => {
       if (blockLength >= 5) {
         const currentStretchLen = leftBlock ? rightStretch : leftStretch;
 
-        // status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
-        handleSetScoreList(Math.min(4, length + currentStretchLen), 1);
+        setScoreList(Math.min(4, length + currentStretchLen), 1);
       }
     }
   } else if (length <= 2) {
@@ -228,52 +214,31 @@ const saveScore = () => {
           if (!isLeftStretchBlock && !isRightStretchBlock) {
             // 00101*01000
             if (leftStretch === rightStretch && leftStretch > 0) {
-              // status.push(`${role}_${Math.min(4, length + leftStretch)}_2`);
-              handleSetScoreList(Math.min(4, length + leftStretch), 2);
+              setScoreList(Math.min(4, length + leftStretch), 2);
             } else {
-              // status.push(
-              //   `${role}_${Math.min(
-              //     4,
-              //     length + Math.max(leftStretch, rightStretch),
-              //   )}_1`,
-              // );
-              handleSetScoreList(
+              setScoreList(
                 Math.min(4, length + Math.max(leftStretch, rightStretch)),
                 1,
               );
             }
           } else {
-            // status.push(
-            //   `${role}_${Math.min(
-            //     4,
-            //     length + Math.max(leftStretch, rightStretch),
-            //   )}_1`,
-            // );
-            handleSetScoreList(
+            setScoreList(
               Math.min(4, length + Math.max(leftStretch, rightStretch)),
               1,
             );
           }
         } else if (!leftStretch && !rightStretch) {
           if (rightStretchBlockIndex - leftStretchBlockIndex - 1 > 6) {
-            // status.push(`${role}_${length}_2`);
-            handleSetScoreList(length, 2);
+            setScoreList(length, 2);
           } else {
-            // status.push(`${role}_${length}_1`);
-            handleSetScoreList(length, 1);
+            setScoreList(length, 1);
           }
         } else if (leftStretch || rightStretch) {
           // TODO 未区分
           //   2     8
           // 00201*01000
           // 00201*01200
-          // status.push(
-          //   `${role}_${Math.min(
-          //     4,
-          //     length + Math.max(leftStretch, rightStretch),
-          //   )}_1`,
-          // );
-          handleSetScoreList(
+          setScoreList(
             Math.min(4, length + Math.max(leftStretch, rightStretch)),
             1,
           );
@@ -288,8 +253,7 @@ const saveScore = () => {
 
       if (len >= 5) {
         const currentStretchLen = leftBlock ? rightStretch : leftStretch;
-        // status.push(`${role}_${Math.min(4, length + currentStretchLen)}_1`);
-        handleSetScoreList(Math.min(4, length + currentStretchLen), 1);
+        setScoreList(Math.min(4, length + currentStretchLen), 1);
       }
     }
   }
@@ -303,6 +267,7 @@ const handleTurnDirection = () => {
 };
 
 const initial = () => {
+  scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   score = 0;
 
   centerInfo.point = 0;
@@ -330,26 +295,28 @@ const initial = () => {
   direction = -1;
 };
 
-export const getByScore = (list = [], chess = 1) => {
+export const getByScore = (list = [], chess = 1, point) => {
+  initial();
   currentList = list;
   chessPieces = chess;
   let handle = getCenter;
-  index = centerInfo.point = Math.floor(list.length / 2);
+  index = centerInfo.point = point || Math.floor(list.length / 2);
   while (handle !== end) {
     index += direction;
     const s = list[index];
     handle = handle(s);
   }
-  initial();
+  return computeScore(scoreList);
 };
 
 /**
- *
+ * 计算类型
  * @param {*} scoreList
  * @returns
  */
 
 const computeScore = (scoreList, sealScoreList) => {
+  // TODO 后续修改
   // // 成五
   // if (scoreList[8]) return 10000000;
   // // 敌方成五
@@ -370,93 +337,88 @@ const computeScore = (scoreList, sealScoreList) => {
     if (scoreList[i]) return i;
   }
   return 0;
-
-  // for (let i = 0; i < sealScoreList.length; i++) {
-  //   num += sealScoreListTables[i] * sealScoreList[i];
-  // }
-  // return num;
 };
 
-const getScore = (list = [], chess = 1, negation = false) => {
-  scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  list.forEach(item => {
-    if (isEmpty(item)) return;
-    enemy = 0;
-    getByScore(item, chess);
-    // enemy = 1;
-    // getByScore(item, 3 - chess);
-  });
+// const getScore = (list = [], chess = 1, negation = false) => {
+//   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+//   // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+//   list.forEach(item => {
+//     if (isEmpty(item)) return;
+//     enemy = 0;
+//     getByScore(item, chess);
+//     // enemy = 1;
+//     // getByScore(item, 3 - chess);
+//   });
 
-  return computeScore(scoreList);
-};
+//   return computeScore(scoreList);
+// };
 /** test */
-// [
-// 5
-// [0, 0, 0, 0, 1, '*', 1, 1, 1, 0, 0],
-// [0, 0, 1, 1, 1, '*', 1, 0, 0, 0, 0],
-// [0, 0, 1, 1, 1, '*', 1, 1, 0, 0, 0],
-// [0, 0, 1, 1, 1, '*', 1, 1, 2, 0, 0],
-// [0, 0, 2, 1, 1, '*', 1, 1, 2, 0, 0],
-// 4-2
-// [0, 0, 1, 0, 1, '*', 1, 0, 1, 0, 0],
-// [0, 0, 0, 0, 1, '*', 1, 1, 0, 0, 0],
-// [0, 0, 0, 0, 0, '*', 1, 1, 1, 0, 0],
-// 4-1
-// [0, 0, 0, 2, 1, '*', 1, 1, 0, 0, 0],
-// [0, 0, 0, 0, 1, '*', 1, 1, 2, 0, 0],
-// [0, 0, 2, 0, 1, '*', 1, 1, 2, 0, 0],
-// [0, 2, 1, 0, 1, '*', 1, 1, 2, 0, 0],
-// [0, 2, 1, 1, 1, '*', 0, 2, 0, 0, 0],
-// 3-2
-// [0, 0, 0, 0, 1, '*', 1, 0, 0, 0, 0],
-// [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
-// [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
-// [0, 0, 1, 0, 1, '*', 0, 1, 0, 2, 0],
-// [0, 0, 0, 0, 1, '*', 0, 1, 0, 2, 0],
-// 3-1
-// [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
-// [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-// [0, 0, 0, 2, 1, '*', 1, 0, 0, 2, 0],
-// [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-// [0, 2, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-// [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-// [0, 0, 2, 0, 1, '*', 0, 1, 2, 0, 0],
-// [0, 2, 1, 0, 1, '*', 0, 1, 2, 0, 0],
-// [0, 0, 0, 2, 1, '*', 0, 1, 0, 0, 0],
-// 3-0
-// [0, 0, 2, 0, 1, '*', 1, 2, 0, 0, 0],
-// [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
-// [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-// 2-2
-// [0, 0, 0, 0, 1, '*', 0, 0, 0, 0, 0],
-// [0, 2, 0, 0, 1, '*', 0, 0, 0, 2, 0],
-// [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-// 2-1
-// [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-// [0, 0, 0, 2, 1, '*', 0, 0, 0, 0, 0],
-// [0, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-// [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-// [0, 0, 0, 0, 2, '*', 0, 1, 0, 0, 0],
-// [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-// 2-0
-// [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-// [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-// [0, 0, 2, 0, 1, '*', 0, 2, 0, 0, 0],
-// [0, 0, 2, 0, 1, '*', 2, 0, 0, 0, 0],
-// [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-// [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-// 1-2
-// [0, 0, 0, 0, 0, '*', 0, 0, 0, 0, 0],
-// [0, 0, 0, 2, 0, '*', 0, 0, 0, 0, 0],
-// 1-1
-// [0, 0, 0, 0, 2, '*', 0, 0, 0, 0, 0],
-// [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
-// [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
-// 1-0
-//   [-1, 0, 0, 0, 0, '*', 2, 2, 2, 0, 0],
-// ].forEach(item => {
-//   console.log(getScore([item], 1));
-// });
+[
+  // 5
+  // [0, 0, 0, 0, 1, '*', 1, 1, 1, 0, 0],
+  // [0, 0, 1, 1, 1, '*', 1, 0, 0, 0, 0],
+  // [0, 0, 1, 1, 1, '*', 1, 1, 0, 0, 0],
+  // [0, 0, 1, 1, 1, '*', 1, 1, 2, 0, 0],
+  // [0, 0, 2, 1, 1, '*', 1, 1, 2, 0, 0],
+  // 4-2
+  // [0, 0, 1, 0, 1, '*', 1, 0, 1, 0, 0],
+  // [0, 0, 0, 0, 1, '*', 1, 1, 0, 0, 0],
+  // [0, 0, 0, 0, 0, '*', 1, 1, 1, 0, 0],
+  // 4-1
+  // [0, 0, 0, 2, 1, '*', 1, 1, 0, 0, 0],
+  // [0, 0, 0, 0, 1, '*', 1, 1, 2, 0, 0],
+  // [0, 0, 2, 0, 1, '*', 1, 1, 2, 0, 0],
+  // [0, 2, 1, 0, 1, '*', 1, 1, 2, 0, 0],
+  // [0, 2, 1, 1, 1, '*', 0, 2, 0, 0, 0],
+  // 3-2
+  // [0, 0, 0, 0, 1, '*', 1, 0, 0, 0, 0],
+  // [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
+  // [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
+  // [0, 0, 1, 0, 1, '*', 0, 1, 0, 2, 0],
+  // [0, 0, 0, 0, 1, '*', 0, 1, 0, 2, 0],
+  // 3-1
+  // [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
+  // [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 1, 0, 0, 2, 0],
+  // [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
+  // [0, 2, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+  // [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
+  // [0, 0, 2, 0, 1, '*', 0, 1, 2, 0, 0],
+  // [0, 2, 1, 0, 1, '*', 0, 1, 2, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 0, 1, 0, 0, 0],
+  // 3-0
+  // [0, 0, 2, 0, 1, '*', 1, 2, 0, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
+  // [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
+  // 2-2
+  // [0, 0, 0, 0, 1, '*', 0, 0, 0, 0, 0],
+  // [0, 2, 0, 0, 1, '*', 0, 0, 0, 2, 0],
+  // [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
+  // 2-1
+  // [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 0, 0, 0, 0, 0],
+  // [0, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+  // [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 0, 0, 2, '*', 0, 1, 0, 0, 0],
+  // [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
+  // 2-0
+  // [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 2, 0, 1, '*', 0, 2, 0, 0, 0],
+  // [0, 0, 2, 0, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
+  // [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
+  // 1-2
+  // [0, 0, 0, 0, 0, '*', 0, 0, 0, 0, 0],
+  // [0, 0, 0, 2, 0, '*', 0, 0, 0, 0, 0],
+  // 1-1
+  // [0, 0, 0, 0, 2, '*', 0, 0, 0, 0, 0],
+  // [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
+  // [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
+  // 1-0
+  //   [-1, 0, 0, 0, 0, '*', 2, 2, 2, 0, 0],
+].forEach(item => {
+  console.log(getByScore(item, 1));
+});
 
-export default getScore;
+// export default getScore;

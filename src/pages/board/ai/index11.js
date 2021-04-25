@@ -2,7 +2,6 @@ import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN } from './constant';
 import getDurationList from './getDurationList';
 import config from '../config';
 import hasNeedMatch from './hasNeedMatch';
-import getScore from './getScore';
 import { forEach } from 'lodash';
 
 const { space } = config;

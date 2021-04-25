@@ -1,7 +1,6 @@
 import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN, swapRoles } from './constant';
 import getDurationList from './getDurationList';
 import hasNeedMatch from './hasNeedMatch';
-import getScore from './getScore';
 import evaluate from './evaluate';
 
 function compose(...funcs) {
