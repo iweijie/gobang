@@ -13,15 +13,16 @@ let currentList = [];
 const isNot = -1;
 
 let info = {
+  isInit: true,
   // hum的得分
   hum: [0, 0, 0, 0, 0, 0, 0, 0, 0],
   // compute的得分
   compute: [0, 0, 0, 0, 0, 0, 0, 0, 0],
 
   // 标记之前是否有查询到非空棋子
-  isEmpty: false,
+  hasPreBlank: false,
   // 之前的棋子类型
-  pre: isNot,
+  pre: EMPTY,
   // 当前节点索引
   current: isNot,
 
@@ -36,7 +37,7 @@ let info = {
   // 结束索引
   end: isNot,
   // 前半部的开始索引
-  preStart: isNot,
+  preStart: EMPTY,
   // 前半部的结束索引
   preEnd: isNot,
   // 后半部的开始索引
@@ -63,7 +64,7 @@ const clearInfo = () => {
     compute: [0, 0, 0, 0, 0, 0, 0, 0, 0],
 
     // 标记之前是否有查询到非空棋子
-    isEmpty: false,
+    hasPreBlank: false,
     // 之前的棋子类型
     pre: isNot,
     // 当前节点索引
@@ -110,14 +111,21 @@ const clearInfo = () => {
 
 const evaluate = (list, sente) => {
   currentList = list;
-
+  let handle = match;
   // ——
-  for (let row = 0; row < size; row++) {
+  for (let row = 0; row < 1; row++) {
     clearInfo();
     for (let col = 0; col < size; col++) {
-      match(row, col);
+      const index = row * size + col;
+      handle = match(index);
     }
+    set();
   }
+};
+
+const getPrePoint = index => {
+  if (index % size === 0) return EMPTY;
+  return currentList[index - 1];
 };
 
 /**
@@ -125,83 +133,35 @@ const evaluate = (list, sente) => {
  * @param {number} row
  * @param {number} col
  */
-//  0011101000
-const match = (row, col) => {
-  const index = row * size + col;
-  const current = currentList[index];
-  if (current === EMPTY) {
-    zero(index);
-  } else {
-    // 设置前缀空白区域
-    if (info.startBlank !== isNot) {
-      if (info.blankLeftStart === isNot) {
-        info.blankLeftStart = info.startBlank;
-        info.blankLeftEnd = info.endBlank;
-      } else {
-        info.blankRightStart = info.startBlank;
-        info.blankRightEnd = info.endBlank;
-      }
-    }
 
-    if (current === HUM) {
-      hum(index);
-    } else if (current === COMPUTE) {
-      compute(index);
-    }
-  }
+const match = index => {
+  const d = currentList[index];
+  if (d === EMPTY) return empty(index);
+  if (d === HUM) return hum(index);
+  if (d === COMPUTE) return compute(index);
 };
 
-const zero = index => {
-  // 初始化
-  if (info.current === isNot) {
+const empty = index => {
+  const d = currentList[index];
+  const pre = getPrePoint(index);
+
+  if (d !== EMPTY) {
+    info.blankLeftStart = info.startBlank;
+    info.blankLeftEnd = info.endBlank;
+    info.startBlank = info.endBlank = isNot;
+    return d === HUM ? hum(index) : compute(index);
+  }
+
+  if (pre !== EMPTY) {
     info.startBlank = info.endBlank = index;
-  } else if (info.current !== EMPTY) {
-    // 由黑白棋进入空白区域
-    if (!info.isEmpty) {
-      // 用于标记当前是否已经进入了空白区域
-      info.isEmpty = true;
-      info.startBlank = info.endBlank = index;
-      info.pre = info.current;
-    } else {
-      // 超过两格，不再考虑联动性
-      // TODO
-      set();
-      info.isEmpty = false;
-      info.endBlank = index;
-    }
   } else {
-    // info.startBlank 不为空，则表示之前的记录状态为  EMPTY ，endBlank直接往后移动即可
-    info.endBlank = index;
+    info.endBlank += 1;
   }
 
-  info.current = EMPTY;
+  return empty;
 };
 
-const hum = index => {
-  if (index === 4) debugger;
-
-  // 初始话
-  if (info.current === isNot) {
-    info.start = info.end = index;
-  } else if (info.current === EMPTY) {
-    // 标识
-    if (info.isEmpty) {
-      if (info.pre === HUM) {
-        info.preStart = info.start;
-        info.preEnd = info.end;
-      } else {
-        set();
-      }
-    } else {
-      info.start = info.end = index;
-      info.startBlank = info.endBlank = isNot;
-    }
-  } else if (info.current === HUM) {
-    info.end = index;
-  }
-
-  info.current = HUM;
-};
+const hum = index => {};
 
 const compute = () => {};
 
@@ -209,6 +169,8 @@ const compute = () => {};
  * 设置分值
  */
 const set = index => {
+  const d = currentList[index];
+
   console.log('set');
 };
 
@@ -221,7 +183,8 @@ const resetInfo = index => {
   info.current = swapRoles(info.current);
 };
 
-const a = [[0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].flat(1);
+const a = [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 evaluate(a);
+console.log(info);
 export default evaluate;
