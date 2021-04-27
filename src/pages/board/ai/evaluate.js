@@ -7,41 +7,33 @@ import { swapRoles, EMPTY, WALL, HUM, COMPUTE } from './constant';
 import { filter, forEach } from 'lodash';
 
 const { size, space } = config;
-
-let currentList = [];
-
+// 常量
 const isNot = -1;
-
-// 需要计算的点位
-let computePoints = [];
+const EOF = -2;
+// 当前棋盘的引用
+let currentList = [];
 
 // hum的得分
 let h = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 // compute的得分
 let c = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
+let index = 0;
 let info = {
   // 之前的棋子类型
   pre: EMPTY,
-
   /**
    * 如： 0110100
    * preStart = 1， preEnd = 2
    * nextStart = 4， nextEnd = 4
    * start = 1，end = 4
    */
+  // start - end 之间是否包含一个零
+  hasZero: false,
   // 开始索引
   start: isNot,
   // 结束索引
   end: isNot,
-  // 前半部的开始索引
-  preStart: EMPTY,
-  // 前半部的结束索引
-  preEnd: isNot,
-  // 后半部的开始索引
-  nextStart: isNot,
-  // 后半部的结束索引
-  nextEnd: isNot,
 
   // 当前节点左右空白节点开始结束点位， 属于包含关系；如 : 000100100  左空白节点：0-2 中间节点为 3-6， 右空白节点 7-8
 
@@ -52,47 +44,24 @@ let info = {
   blankLeftEnd: isNot,
 };
 
+/** 供测试使用 */
+export const _test_get_h = () => h;
+export const _test_get_c = () => c;
+
+/** 清空分数 */
+export const clearScoreHAndC = () => {
+  for (let i = 0; i < h.length; i++) {
+    h[i] = 0;
+    c[i] = 0;
+  }
+};
+
 const clearInfo = () => {
   info = {
-    // start - end 之间是否包含一个零
-    hasZero: false,
-    // hum的得分
-    hum: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    // compute的得分
-    compute: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-
-    // 标记之前是否有查询到非空棋子
-    hasPreBlank: false,
-    // 之前的棋子类型
     pre: EMPTY,
-    // 当前节点索引
-    current: isNot,
-
-    leftBlock: false,
-    rightBlock: false,
-
-    /**
-     * 如： 0110100
-     * preStart = 1， preEnd = 2
-     * nextStart = 4， nextEnd = 4
-     * start = 1，end = 4
-     */
-    // 开始索引
+    hasZero: false,
     start: isNot,
-    // 结束索引
     end: isNot,
-    // 前半部的开始索引
-    preStart: EMPTY,
-    // 前半部的结束索引
-    preEnd: isNot,
-    // 后半部的开始索引
-    nextStart: isNot,
-    // 后半部的结束索引
-    nextEnd: isNot,
-
-    // 当前节点左右空白节点开始结束点位， 属于包含关系；如 : 000100100  左空白节点：0-2 中间节点为 3-6， 右空白节点 7-8
-
-    // 后缀空白节点起点索引，例如：0001000200. 可以分为 0001000 和 0002000000
     startBlank: isNot,
     endBlank: isNot,
     blankLeftStart: isNot,
@@ -108,25 +77,29 @@ const clearInfo = () => {
  * 例如：01011122202000
  */
 
-const evaluate = (list, sente) => {
-  currentList = list;
-  let handle = match;
+const evaluate = list => {
   // ——
-  for (let row = 0; row < 1; row++) {
-    // clearInfo();
-    for (let col = 0; col < size; col++) {
-      const index = row * size + col;
-      const d = currentList[index];
-      const pre = getPrePoint(index);
-      handle = handle({ index, row, col, d, pre });
-    }
-    set('end');
+  for (let row = 0; row < size; row++) {
+    evaluateOneLine(list.slice(row * size, (row + 1) * size));
   }
 };
 
-const getPrePoint = index => {
-  if (index % size === 0) return EMPTY;
-  return currentList[index - 1];
+/**
+ * 对于单行的评估
+ * @param {number[]} list
+ */
+export const evaluateOneLine = list => {
+  //  一些初始化操作
+  let handle = match;
+  index = 0;
+  clearInfo();
+
+  // 循环
+  const len = list.length;
+  for (; index < len; index++) {
+    handle = handle(list[index]);
+  }
+  handle(EOF);
 };
 
 /**
@@ -137,45 +110,60 @@ const getPrePoint = index => {
 /**
  * 0111010200
  */
-const match = props => {
-  const d = currentList[props.index];
-  if (d === EMPTY) return empty(props);
-  if (d === HUM) return hum(props);
-  if (d === COMPUTE) return compute(props);
+const match = d => {
+  if (d === EMPTY) return preEmpty(d);
+  if (d === HUM) return hum(d);
+  if (d === COMPUTE) return compute(d);
 };
 
-const empty = props => {
-  const { index, d, pre } = props;
-  if (d !== EMPTY) {
-    // info.blankLeftStart !== isNot 标记了左侧空白
-
-    if (info.blankLeftStart !== isNot) {
-      if (info.startBlank !== isNot) {
-        // TODO 调试到这里
-        set(props);
-      } else {
-        info.startBlank = info.endBlank = index;
-      }
-    } else {
-      info.blankLeftStart = info.startBlank;
-      info.blankLeftEnd = info.endBlank;
-    }
-    return d === HUM ? hum(props) : compute(props);
+/**
+ * 前缀空白区域,只有开始节点为0时会进入， 如： 000110 ； 0-2 会进入
+ */
+const preEmpty = d => {
+  if (d === EOF) {
+    return;
   }
-  if (pre !== EMPTY) {
+
+  if (d !== EMPTY) {
+    info.blankLeftStart = info.startBlank;
+    info.blankLeftEnd = info.endBlank;
+    info.startBlank = info.endBlank = isNot;
+
+    return d === HUM ? hum(d) : compute(d);
+  }
+  if (info.startBlank === isNot) {
     info.startBlank = info.endBlank = index;
   } else {
-    if (info.startBlank === isNot) {
-      info.startBlank = info.endBlank = index;
-    } else {
-      info.endBlank = index;
-    }
+    info.endBlank = index;
   }
-
-  return empty;
+  return preEmpty;
 };
 
-const hum = ({ index, d, pre }) => {
+const nextEmpty = d => {
+  if (d === EOF) {
+    set(info.pre);
+    return;
+  }
+
+  if (d !== EMPTY) {
+    set(info.pre);
+
+    resetInfo();
+
+    return d === HUM ? hum(d) : compute(d);
+  }
+
+  info.endBlank = index;
+
+  return nextEmpty;
+};
+
+const hum = d => {
+  if (d === EOF) {
+    set(HUM);
+    return;
+  }
+
   if (d === HUM) {
     if (info.start === isNot) {
       info.start = info.end = index;
@@ -186,60 +174,89 @@ const hum = ({ index, d, pre }) => {
   }
 
   if (d === EMPTY) {
+    info.pre = HUM;
     if (info.hasZero) {
       info.startBlank = info.endBlank = index;
-      return empty;
-    } else {
-      info.pre = HUM;
-      info.hasZero = true;
+      return nextEmpty;
     }
-
     return middle;
   }
 
-  if (d === COMPUTE) {
-    info.rightBlock = true;
-    set('hum');
-    info.rightBlock = false;
-    info.LeftBlock = true;
-    info.start = info.end = index;
-    resetInfoBlank();
-    return compute;
-  }
+  set(HUM);
+  resetInfo();
+  return compute(d);
 };
+
+// const middleEmpty = d => {
+//   if (d === info.pre) {
+
+//   }
+// };
 
 /**
  * 001101
  */
-const middle = props => {
-  const { index, d, pre } = props;
-  // TODO
-  if (d === EMPTY) {
-    // set(props, 'middle');
-    // resetInfoBlank();
-    // info.startBlank = index - 1;
-    info.endBlank = index;
-    return empty;
+const middle = d => {
+  if (d === EOF) {
+    info.startBlank = info.endBlank = index - 1;
+    set(info.pre);
+    return;
   }
+
+  if (d === EMPTY) {
+    info.startBlank = index - 1;
+    info.endBlank = index;
+
+    return nextEmpty;
+  }
+
+  const handle = d === HUM ? hum : compute;
 
   if (d === info.pre) {
+    info.hasZero = true;
     info.end = index;
-    return d === HUM ? hum : compute;
+    return handle;
   }
-
-  // TODO
-  set({ ...props, current: d });
+  info.startBlank = info.endBlank = index - 1;
+  set(info.pre);
+  resetInfo();
+  return handle(d);
 };
 
-const compute = index => {
-  const d = currentList[index];
-  const pre = getPrePoint(index);
+const compute = d => {
+  if (d === EOF) {
+    set(COMPUTE);
+    return;
+  }
+
+  if (d === COMPUTE) {
+    if (info.start === isNot) {
+      info.start = info.end = index;
+    } else {
+      info.end = index;
+    }
+    return compute;
+  }
+
+  if (d === EMPTY) {
+    debugger;
+    info.pre = COMPUTE;
+    if (info.hasZero) {
+      info.startBlank = info.endBlank = index;
+      return nextEmpty;
+    }
+    return middle;
+  }
+
+  set(COMPUTE);
+  resetInfo();
+  return hum(d);
 };
 
 /**
  * 设置分值
  */
-const set = ({ index, d, pre, current }) => {
+const set = current => {
   const {
     blankLeftStart,
     blankLeftEnd,
@@ -304,22 +321,21 @@ const set = ({ index, d, pre, current }) => {
 /**
  * 因为棋子变换，重新设置信息
  */
-const resetInfoBlank = index => {
-  info.startBlank = isNot;
-  info.endBlank = isNot;
-  info.blankLeftStart = isNot;
-  info.blankLeftEnd = isNot;
-  info.blankRightStart = isNot;
-  info.blankRightEnd = isNot;
+const resetInfo = () => {
+  info.blankLeftStart = info.startBlank;
+  info.blankLeftEnd = info.endBlank;
+  info.startBlank = info.endBlank = info.start = info.end = isNot;
+  info.hasZero = false;
 };
 
 const setScore = (list, t, i = 1) => {
   const index = (t - 1) * 2 + (i === 2 ? 1 : 0);
   list[index] += 1;
 };
-
-const a = [0, 1, 1, 1, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0];
-
-evaluate(a);
-console.log(info);
+const b = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4];
+const a = [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 1, 1, 1, 1, 0];
+evaluateOneLine(a);
+// console.log(info);
+console.log(h);
+console.log(c);
 export default evaluate;
