@@ -26,58 +26,60 @@ const getBastPoints = ({ list, deep, chessPlayer }) => {
     const index = indexs[k];
 
     list[index] = chessPlayer;
-    const { computeScore: score, humScore } = min({
+
+    const a = min({
       list,
       index,
       chessPlayer: swapRoles(chessPlayer),
       deep: deep - 1,
     });
+
     list[index] = EMPTY;
 
-    if (bast < score) {
-      bast = score;
-      points = [index];
-    } else if (bast === score) {
-      points.push(index);
-    }
+    // if (bast < score) {
+    //   bast = score;
+    //   points = [index];
+    // } else if (bast === score) {
+    //   points.push(index);
+    // }
   }
 
   return points;
 };
 
-const min = ({ list, deep, index, chessPlayer }) => {
+const min = ({ list, deep, chessPlayer }) => {
   let bast = MAX;
-
-  let score = evaluate(list);
-
-  if (deep <= 0 || score >= 100000) {
-    return score;
-  }
-
+  const { h, c } = evaluate(list);
+  console.log('-----------------------');
+  console.log(h.join(''));
+  console.log(c.join(''));
   /**
    * TODO 如果直接能赢或者递归到最底层 那就返回当前点位
    */
+  // if (deep <= 0 || score >= 100000) {
+  //   return score;
+  // }
 
-  const indexs = hasNeedMatch({ list, chessPlayer });
+  // const indexs = hasNeedMatch({ list, chessPlayer });
 
-  for (let k = 0; k < indexs.length; k++) {
-    const index = indexs[k];
+  // for (let k = 0; k < indexs.length; k++) {
+  //   const index = indexs[k];
 
-    list[index] = chessPlayer;
-    score = max({
-      list,
-      index,
-      deep: deep - 1,
-      chessPlayer: swapRoles(chessPlayer),
-    });
-    list[index] = EMPTY;
+  //   list[index] = chessPlayer;
+  //   score = max({
+  //     list,
+  //     index,
+  //     deep: deep - 1,
+  //     chessPlayer: swapRoles(chessPlayer),
+  //   });
+  //   list[index] = EMPTY;
 
-    if (bast > score) {
-      bast = score;
-    }
-  }
+  //   if (bast > score) {
+  //     bast = score;
+  //   }
+  // }
 
-  return bast;
+  // return bast;
 };
 
 const max = ({ list, index, deep, chessPlayer }) => {

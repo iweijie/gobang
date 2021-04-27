@@ -59,7 +59,7 @@ describe('单一测试，活四', () => {
   test('活四-3', () => {
     const data = [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0];
     evaluateOneLine(data);
-    expect(h.join('')).toBe('000000010');
+    expect(h.join('')).toBe('000000020');
   });
 });
 

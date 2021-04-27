@@ -26,32 +26,18 @@
  * 敌方成一一 : 49
  */
 
-export const scoreMap = {
+export const SCORE_MAP = {
   // 进攻
-  attack_1_1: 1,
-  attack_1_2: 10,
-  attack_2_1: 10,
-  attack_2_2: 100,
-  attack_3_1: 100,
-  attack_3_2: 1000,
-  attack_4_1: 1000,
-  attack_4_2: 10000,
-  attack_5: 500000,
 
-  // // 防守
-  // // guard_1_1: 49,
-  // // guard_1_2: 499,
-  // // guard_2_1: 499,
-  // guard_1_1: 0,
-  // guard_1_2: 0,
-  // guard_2_1: 0,
-  // guard_2_2: 100,
-  // guard_3_1: 100,
-  // // 双 三二 >
-  // guard_3_2: 1000,
-  // guard_4_1: 1000,
-  // guard_4_2: 10000,
-  // guard_5: 500000,
+  0: 0, // 1-1
+  1: 0, // 1-2
+  2: 10, // 2-1
+  3: 100, // 2-2
+  4: 100, // 3-1
+  5: 1000, // 3-2
+  6: 1000, // 4-1
+  7: 10000, // 4-1
+  8: 100000, // 5
 };
 
 export const attack = 'attack';

@@ -3,7 +3,7 @@ import getPositionFromIndex, {
 } from './getPositionFromIndex';
 import config from '../config';
 import { getByScore } from './getScore';
-import { swapRoles, EMPTY, WALL, HUM, COMPUTE } from './constant';
+import { swapRoles, EMPTY, WALL, HUM, COMPUTE, SCORE_MAP } from './constant';
 import { filter, forEach } from 'lodash';
 
 const { size, space } = config;
@@ -30,6 +30,7 @@ let info = {
    */
   // start - end 之间是否包含一个零
   hasZero: false,
+  zero: 0,
   // 开始索引
   start: isNot,
   // 结束索引
@@ -62,10 +63,29 @@ export const clearScoreHAndC = () => {
 
 const clearInfo = () => {
   info = {
+    // 之前的棋子类型
     pre: EMPTY,
+    /**
+     * 如： 0110100
+     * preStart = 1， preEnd = 2
+     * nextStart = 4， nextEnd = 4
+     * start = 1，end = 4
+     */
+    // start - end 之间是否包含一个零
     hasZero: false,
+    zero: 0,
+    // 开始索引
     start: isNot,
+    // 结束索引
     end: isNot,
+
+    preStart: isNot,
+    preEnd: isNot,
+    nextStart: isNot,
+    nextEnd: isNot,
+    // 当前节点左右空白节点开始结束点位， 属于包含关系；如 : 000100100  左空白节点：0-2 中间节点为 3-6， 右空白节点 7-8
+
+    // 后缀空白节点起点索引，例如：0001000200. 可以分为 0001000 和 0002000000
     startBlank: isNot,
     endBlank: isNot,
     blankLeftStart: isNot,
@@ -82,10 +102,66 @@ const clearInfo = () => {
  */
 
 const evaluate = list => {
+  clearScoreHAndC();
   // ——
   for (let row = 0; row < size; row++) {
     evaluateOneLine(list.slice(row * size, (row + 1) * size));
   }
+  // |
+  for (let row = 0; row < size; row++) {
+    //  一些初始化操作
+    let handle = match;
+    index = 0;
+    clearInfo();
+    for (; index < size; index++) {
+      handle = handle(list[index * size + row]);
+    }
+    handle(EOF);
+  }
+
+  // \
+
+  for (let row = 0; row < 2 * size; row++) {
+    let handle = match;
+    index = 0;
+    clearInfo();
+    if (row === size) continue;
+    if (row >= 0 && row < size) {
+      for (index = 0; index <= row; index++) {
+        const i = index * size + size - index - 1;
+        handle = handle(list[i]);
+      }
+    } else {
+      for (index = 0; index < 2 * size - row; index++) {
+        const i = row - size + index * size + index;
+        handle = handle(list[i]);
+      }
+    }
+    handle(EOF);
+  }
+
+  // /
+
+  for (let row = 0; row < 2 * size; row++) {
+    let handle = match;
+    index = 0;
+    clearInfo();
+    if (row === size) continue;
+    if (0 <= row && row < size) {
+      for (index = 0; index <= row; index++) {
+        const i = index * size + row - index;
+        handle = handle(list[i]);
+      }
+    } else {
+      for (index = 0; index < 2 * size - row; index++) {
+        const i = (row - size + index) * size - index - 1;
+        handle = handle(list[i]);
+      }
+    }
+    handle(EOF);
+  }
+
+  return { h, c };
 };
 
 /**
@@ -162,9 +238,8 @@ const nextEmpty = d => {
       info.preStart = nextStart;
       info.blankLeftEnd = nextStart - 1;
       info.blankLeftStart = nextStart - 1;
-      // info.hasZero = true;
-      // info.nextStart = info.nextEnd = index;
-      return middle(d);
+      info.hasZero = true;
+      info.nextStart = info.nextEnd = index;
     }
 
     return d === HUM ? hum(d) : compute(d);
@@ -175,42 +250,79 @@ const nextEmpty = d => {
   return nextEmpty;
 };
 
-// const derive = (D, handle)=>{
-
-// }
-
-const hum = d => {
-  if (d === EOF) {
-    set(HUM);
-    return;
-  }
-
-  if (d === HUM) {
-    if (info.start === isNot) {
-      info.start = info.end = index;
-    } else if (info.nextStart !== isNot) {
-      info.end = info.nextEnd = index;
-    } else {
-      info.end = index;
+const derive = D => {
+  return d => {
+    if (d === EOF) {
+      set(D);
+      return;
     }
-    return hum;
-  }
 
-  if (d === EMPTY) {
-    info.pre = HUM;
-    if (info.hasZero) {
-      info.startBlank = info.endBlank = index;
-      return nextEmpty;
+    const handle = D === HUM ? hum : compute;
+    const handle1 = D === HUM ? compute : hum;
+
+    if (d === D) {
+      if (info.start === isNot) {
+        info.start = info.end = index;
+      } else if (info.nextStart !== isNot) {
+        info.end = info.nextEnd = index;
+      } else {
+        info.end = index;
+      }
+      return handle;
     }
-    info.preStart = info.start;
-    info.preEnd = info.end;
-    return middle;
-  }
 
-  set(HUM);
-  resetInfo();
-  return compute(d);
+    if (d === EMPTY) {
+      info.pre = D;
+      if (info.hasZero) {
+        info.startBlank = info.endBlank = index;
+        return nextEmpty;
+      }
+      info.preStart = info.start;
+      info.preEnd = info.end;
+      return middle;
+    }
+
+    set(D);
+    resetInfo();
+    return handle1(d);
+  };
 };
+
+const hum = derive(HUM);
+const compute = derive(COMPUTE);
+
+// const hum = d => {
+//   if (d === EOF) {
+//     set(HUM);
+//     return;
+//   }
+
+//   if (d === HUM) {
+//     if (info.start === isNot) {
+//       info.start = info.end = index;
+//     } else if (info.nextStart !== isNot) {
+//       info.end = info.nextEnd = index;
+//     } else {
+//       info.end = index;
+//     }
+//     return hum;
+//   }
+
+//   if (d === EMPTY) {
+//     info.pre = HUM;
+//     if (info.hasZero) {
+//       info.startBlank = info.endBlank = index;
+//       return nextEmpty;
+//     }
+//     info.preStart = info.start;
+//     info.preEnd = info.end;
+//     return middle;
+//   }
+
+//   set(HUM);
+//   resetInfo();
+//   return compute(d);
+// };
 
 const middle = d => {
   if (d === EOF) {
@@ -239,39 +351,6 @@ const middle = d => {
   return handle(d);
 };
 
-const compute = d => {
-  if (d === EOF) {
-    set(COMPUTE);
-    return;
-  }
-
-  if (d === COMPUTE) {
-    if (info.start === isNot) {
-      info.start = info.end = index;
-    } else {
-      info.end = index;
-    }
-    return compute;
-  }
-
-  if (d === EMPTY) {
-    info.pre = COMPUTE;
-    if (info.hasZero) {
-      info.startBlank = info.endBlank = index;
-      return nextEmpty;
-    }
-
-    info.preStart = info.start;
-    info.preEnd = info.end;
-
-    return middle;
-  }
-
-  set(COMPUTE);
-  resetInfo();
-  return hum(d);
-};
-
 /**
  * 设置分值
  */
@@ -291,7 +370,6 @@ const set = current => {
     nextStart,
     nextEnd,
   } = info;
-  debugger;
   const leftBlank =
     blankLeftStart === isNot ? 0 : blankLeftEnd - blankLeftStart + 1;
   const length = end - start + 1;
@@ -370,10 +448,33 @@ const setScore = (list, t, i = 1) => {
   const index = (t - 1) * 2 + (i === 2 ? 1 : 0);
   list[index] += 1;
 };
-const b = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4];
-const a = [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0];
-evaluateOneLine(a);
-// console.log(info);
-console.log(h);
-console.log(c);
+
+const computeScore = f => {
+  let score = 0;
+  h.forEach((item, index) => {
+    score += SCORE_MAP[index] * item;
+  });
+  return score;
+};
+
+// const data = [
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+// ].flat(1);
+// evaluate(data);
+// console.log(h)
+// console.log(c)
 export default evaluate;
