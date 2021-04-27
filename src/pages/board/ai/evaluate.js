@@ -35,6 +35,10 @@ let info = {
   // 结束索引
   end: isNot,
 
+  preStart: isNot,
+  preEnd: isNot,
+  nextStart: isNot,
+  nextEnd: isNot,
   // 当前节点左右空白节点开始结束点位， 属于包含关系；如 : 000100100  左空白节点：0-2 中间节点为 3-6， 右空白节点 7-8
 
   // 后缀空白节点起点索引，例如：0001000200. 可以分为 0001000 和 0002000000
@@ -147,8 +151,21 @@ const nextEmpty = d => {
 
   if (d !== EMPTY) {
     set(info.pre);
+    const { pre, startBlank, endBlank, nextEnd, nextStart } = info;
 
     resetInfo();
+    if (pre === d && startBlank === endBlank) {
+      // TODO 到这里啦
+      info.start = nextStart;
+      info.end = nextEnd;
+      info.preEnd = nextEnd;
+      info.preStart = nextStart;
+      info.blankLeftEnd = nextStart - 1;
+      info.blankLeftStart = nextStart - 1;
+      // info.hasZero = true;
+      // info.nextStart = info.nextEnd = index;
+      return middle(d);
+    }
 
     return d === HUM ? hum(d) : compute(d);
   }
@@ -157,6 +174,10 @@ const nextEmpty = d => {
 
   return nextEmpty;
 };
+
+// const derive = (D, handle)=>{
+
+// }
 
 const hum = d => {
   if (d === EOF) {
@@ -167,6 +188,8 @@ const hum = d => {
   if (d === HUM) {
     if (info.start === isNot) {
       info.start = info.end = index;
+    } else if (info.nextStart !== isNot) {
+      info.end = info.nextEnd = index;
     } else {
       info.end = index;
     }
@@ -179,6 +202,8 @@ const hum = d => {
       info.startBlank = info.endBlank = index;
       return nextEmpty;
     }
+    info.preStart = info.start;
+    info.preEnd = info.end;
     return middle;
   }
 
@@ -187,15 +212,6 @@ const hum = d => {
   return compute(d);
 };
 
-// const middleEmpty = d => {
-//   if (d === info.pre) {
-
-//   }
-// };
-
-/**
- * 001101
- */
 const middle = d => {
   if (d === EOF) {
     info.startBlank = info.endBlank = index - 1;
@@ -214,7 +230,7 @@ const middle = d => {
 
   if (d === info.pre) {
     info.hasZero = true;
-    info.end = index;
+    info.nextStart = info.nextEnd = info.end = index;
     return handle;
   }
   info.startBlank = info.endBlank = index - 1;
@@ -239,12 +255,15 @@ const compute = d => {
   }
 
   if (d === EMPTY) {
-    debugger;
     info.pre = COMPUTE;
     if (info.hasZero) {
       info.startBlank = info.endBlank = index;
       return nextEmpty;
     }
+
+    info.preStart = info.start;
+    info.preEnd = info.end;
+
     return middle;
   }
 
@@ -267,19 +286,43 @@ const set = current => {
     start,
     end,
     hasZero,
+    preEnd,
+    preStart,
+    nextStart,
+    nextEnd,
   } = info;
+  debugger;
   const leftBlank =
     blankLeftStart === isNot ? 0 : blankLeftEnd - blankLeftStart + 1;
   const length = end - start + 1;
   const blank = startBlank === isNot ? 0 : endBlank - startBlank + 1;
+  const preLength = preStart === isNot ? 0 : preEnd - preStart + 1;
+  const nextLength = nextStart === isNot ? 0 : nextEnd - nextStart + 1;
 
   const score = current === HUM ? h : c;
 
   const countLen = leftBlank + blank + length;
 
+  if (countLen < 5) return;
+
   if (hasZero) {
     if (length >= 5) {
-      setScore(score, 4, 1);
+      if (preLength >= 5 || nextLength >= 5) {
+        // [0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+        setScore(score, 5, 1);
+      } else {
+        if ((preLength === 4 && leftBlank) || (nextLength === 4 && blank)) {
+          // [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0];
+          setScore(score, 4, 2);
+        } else if (
+          (preLength === 3 && leftBlank >= 2) ||
+          (nextLength === 3 && blank >= 2)
+        ) {
+          setScore(score, 3, 2);
+        } else {
+          setScore(score, 4, 1);
+        }
+      }
     } else if (length === 4 && (leftBlank || blank)) {
       setScore(score, 3, 1);
     } else if (length === 3 && leftBlank && blank && countLen >= 6) {
@@ -295,23 +338,15 @@ const set = current => {
         setScore(score, 4, 1);
       }
     } else if (length === 3) {
-      if (countLen >= 6) {
-        if (leftBlank && blank) {
-          setScore(score, 3, 2);
-        } else if (leftBlank || blank) {
-          setScore(score, 3, 1);
-        }
-      } else if ((leftBlank || blank) && countLen === 5) {
+      if (countLen >= 6 && leftBlank && blank) {
+        setScore(score, 3, 2);
+      } else {
         setScore(score, 3, 1);
       }
     } else if (length === 2) {
-      if (countLen >= 6) {
-        if (leftBlank && blank) {
-          setScore(score, 2, 2);
-        } else if (leftBlank || blank) {
-          setScore(score, 2, 1);
-        }
-      } else if ((leftBlank || blank) && countLen === 5) {
+      if (countLen >= 6 && leftBlank && blank) {
+        setScore(score, 2, 2);
+      } else {
         setScore(score, 2, 1);
       }
     }
@@ -324,7 +359,10 @@ const set = current => {
 const resetInfo = () => {
   info.blankLeftStart = info.startBlank;
   info.blankLeftEnd = info.endBlank;
-  info.startBlank = info.endBlank = info.start = info.end = isNot;
+  info.preStart = info.preEnd = isNot;
+  info.nextStart = info.nextEnd = isNot;
+  info.startBlank = info.endBlank = isNot;
+  info.start = info.end = isNot;
   info.hasZero = false;
 };
 
@@ -333,7 +371,7 @@ const setScore = (list, t, i = 1) => {
   list[index] += 1;
 };
 const b = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4];
-const a = [1, 1, 1, 0, 2, 2, 0, 0, 2, 0, 1, 1, 1, 1, 0];
+const a = [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0];
 evaluateOneLine(a);
 // console.log(info);
 console.log(h);

@@ -23,11 +23,17 @@ describe('单一测试, 成五', () => {
       }
     });
 
-    test(`成五--${i}`, () => {
+    test(`成五-${i}`, () => {
       evaluateOneLine(a);
       expect(h.join('')).toBe('000000001');
     });
   }
+
+  test('成五-11', () => {
+    const data = [0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0];
+    evaluateOneLine(data);
+    expect(h.join('')).toBe('000000001');
+  });
 });
 
 describe('双测试, 成五', () => {
@@ -47,6 +53,11 @@ describe('单一测试，活四', () => {
 
   test('活四-2', () => {
     const data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0];
+    evaluateOneLine(data);
+    expect(h.join('')).toBe('000000010');
+  });
+  test('活四-3', () => {
+    const data = [0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0];
     evaluateOneLine(data);
     expect(h.join('')).toBe('000000010');
   });
