@@ -13,9 +13,7 @@ const { size, space } = config;
  * @return {Boolean}
  */
 
-const hasNeedMatch = params => {
-  const { list, chessPlayer } = params;
-
+const hasNeedMatch = (list, chessPlayer) => {
   const indexs = [];
 
   out: for (let index = 0; index < list.length; index++) {

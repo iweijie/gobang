@@ -2,23 +2,24 @@ import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN, swapRoles } from './constant';
 import hasNeedMatch from './hasNeedMatch';
 import evaluate from './evaluate';
 
+const match = (str, str1) => {
+  if (str === str1) return 0;
+  return str > str1 ? 1 : -1;
+};
+
 // 获取最佳点位
-const maxmin = ({ list, deep, chessPlayer }) => {
+const maxmin = (list, deep, chessPlayer) => {
   let bast = MIN;
   let points = [];
+  const alphaBeta = { alpha, beta };
   let score;
   // 获取需要匹配的点位
-  const indexs = hasNeedMatch({ list, chessPlayer });
-  // console.log('indexs:', indexs);
+  const indexs = hasNeedMatch(list, chessPlayer);
+  console.log('indexs:', indexs);
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
-    if (index === 69 || index === 129) debugger;
     list[index] = chessPlayer;
-    score = min({
-      list,
-      chessPlayer: swapRoles(chessPlayer),
-      deep: deep - 1,
-    });
+    score = min(list, deep - 1, swapRoles(chessPlayer), alphaBeta);
 
     list[index] = EMPTY;
 
@@ -33,7 +34,7 @@ const maxmin = ({ list, deep, chessPlayer }) => {
   return points;
 };
 
-const min = ({ list, deep, chessPlayer }) => {
+const min = (list, deep, chessPlayer) => {
   let bast = MAX;
 
   let score = evaluate(list, chessPlayer);
@@ -45,18 +46,13 @@ const min = ({ list, deep, chessPlayer }) => {
     return score;
   }
 
-  const indexs = hasNeedMatch({ list, chessPlayer });
+  const indexs = hasNeedMatch(list, chessPlayer);
 
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
 
     list[index] = chessPlayer;
-    score = max({
-      list,
-      index,
-      deep: deep - 1,
-      chessPlayer: swapRoles(chessPlayer),
-    });
+    score = max(list, deep - 1, swapRoles(chessPlayer));
 
     list[index] = EMPTY;
 
@@ -68,7 +64,7 @@ const min = ({ list, deep, chessPlayer }) => {
   return bast;
 };
 
-const max = ({ list, index, deep, chessPlayer }) => {
+const max = (list, deep, chessPlayer) => {
   let bast = MIN;
 
   let score = evaluate(list, chessPlayer);
@@ -80,17 +76,13 @@ const max = ({ list, index, deep, chessPlayer }) => {
     return score;
   }
 
-  const indexs = hasNeedMatch({ list, chessPlayer });
+  const indexs = hasNeedMatch(list, chessPlayer);
 
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
 
     list[index] = chessPlayer;
-    score = min({
-      list,
-      deep: deep - 1,
-      chessPlayer: swapRoles(chessPlayer),
-    });
+    score = min(list, deep - 1, swapRoles(chessPlayer));
     list[index] = EMPTY;
 
     if (bast < score) {

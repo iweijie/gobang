@@ -10,9 +10,8 @@ const { size, space } = config;
 // 常量
 const isNot = -1;
 const EOF = -2;
-// 当前棋盘的引用
-let currentList = [];
 
+let currentPlay = COMPUTE;
 // hum的得分
 let h = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 // compute的得分
@@ -101,7 +100,8 @@ const clearInfo = () => {
  * 例如：01011122202000
  */
 
-const evaluate = (list, play) => {
+const evaluate = (list, play = COMPUTE) => {
+  currentPlay = play;
   clearScoreHAndC();
   // ——
   for (let row = 0; row < size; row++) {
@@ -126,14 +126,15 @@ const evaluate = (list, play) => {
     index = 0;
     clearInfo();
     if (row === size) continue;
-    if (row >= 0 && row < size) {
-      for (index = 0; index <= row; index++) {
-        const i = index * size + size - index - 1;
+    if (0 <= row && row < size) {
+      for (index = 0; index < size - row; index++) {
+        const i = (index + row) * size + index;
         handle = handle(list[i]);
       }
     } else {
+      const d = row - size;
       for (index = 0; index < 2 * size - row; index++) {
-        const i = row - size + index * size + index;
+        const i = index * size + d + index;
         handle = handle(list[i]);
       }
     }
@@ -154,7 +155,7 @@ const evaluate = (list, play) => {
       }
     } else {
       for (index = 0; index < 2 * size - row; index++) {
-        const i = (row - size + index) * size - index - 1;
+        const i = (row - size + index + 1) * size - index - 1;
         handle = handle(list[i]);
       }
     }
@@ -291,39 +292,6 @@ const derive = D => {
 const hum = derive(HUM);
 const compute = derive(COMPUTE);
 
-// const hum = d => {
-//   if (d === EOF) {
-//     set(HUM);
-//     return;
-//   }
-
-//   if (d === HUM) {
-//     if (info.start === isNot) {
-//       info.start = info.end = index;
-//     } else if (info.nextStart !== isNot) {
-//       info.end = info.nextEnd = index;
-//     } else {
-//       info.end = index;
-//     }
-//     return hum;
-//   }
-
-//   if (d === EMPTY) {
-//     info.pre = HUM;
-//     if (info.hasZero) {
-//       info.startBlank = info.endBlank = index;
-//       return nextEmpty;
-//     }
-//     info.preStart = info.start;
-//     info.preEnd = info.end;
-//     return middle;
-//   }
-
-//   set(HUM);
-//   resetInfo();
-//   return compute(d);
-// };
-
 const middle = d => {
   if (d === EOF) {
     info.startBlank = info.endBlank = index - 1;
@@ -449,7 +417,7 @@ const setScore = (list, t, i = 1) => {
   list[index] += 1;
 };
 
-const computeScore = play => {
+const computeScore = () => {
   let scoreH = 0;
   let scoreC = 0;
 
@@ -461,19 +429,20 @@ const computeScore = play => {
     scoreC += SCORE_MAP[index] * item;
   });
   // play === COMPUTE ? scoreH - scoreC :
-  return scoreC - scoreH;
+  // return scoreC - scoreH;
+  return currentPlay === COMPUTE ? scoreC - scoreH : scoreH - scoreC;
 };
 
 // const data = [
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+//   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-//   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -482,6 +451,6 @@ const computeScore = play => {
 //   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 // ].flat(1);
 // evaluate(data);
-// console.log(h)
-// console.log(c)
+// console.log(h);
+// console.log(c);
 export default evaluate;
