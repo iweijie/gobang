@@ -9,7 +9,7 @@ import {
 } from 'ahooks';
 
 import Border from './Border/index';
-import { find } from './ai/index';
+import findBastPoints from './ai/index';
 import config from './config';
 
 const Board = props => {
@@ -17,12 +17,12 @@ const Board = props => {
     const a = [
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 2, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -62,9 +62,9 @@ const Board = props => {
     const { chessboard, chessPlayer, isAi } = state;
     // 通常是白子先行，但是玩家可以选择先手 后手
     // TODO 需要修改， 先写死
-    if (!isAi) return;
+    if (!isAi || chessPlayer === 1) return;
 
-    find({
+    findBastPoints({
       list: chessboard,
       size: config.size,
       chessPlayer,
@@ -89,12 +89,12 @@ const Board = props => {
     [state],
   );
 
-  // useEffect(() => {
-  //   find({
-  //     list: chessboard,
-  //     chessPlayer: 1,
-  //   });
-  // }, []);
+  useEffect(() => {
+    findBastPoints({
+      list: chessboard,
+      chessPlayer: 2,
+    });
+  }, []);
 
   return (
     <Border emit={emit} chessboard={state.chessboard} size={config.size} />

@@ -101,7 +101,7 @@ const clearInfo = () => {
  * 例如：01011122202000
  */
 
-const evaluate = list => {
+const evaluate = (list, play) => {
   clearScoreHAndC();
   // ——
   for (let row = 0; row < size; row++) {
@@ -161,7 +161,7 @@ const evaluate = list => {
     handle(EOF);
   }
 
-  return { h, c };
+  return computeScore() || { h: h.reverse().join(''), c: c.reverse().join('') };
 };
 
 /**
@@ -449,12 +449,19 @@ const setScore = (list, t, i = 1) => {
   list[index] += 1;
 };
 
-const computeScore = f => {
-  let score = 0;
+const computeScore = play => {
+  let scoreH = 0;
+  let scoreC = 0;
+
   h.forEach((item, index) => {
-    score += SCORE_MAP[index] * item;
+    scoreH += SCORE_MAP[index] * item;
   });
-  return score;
+
+  c.forEach((item, index) => {
+    scoreC += SCORE_MAP[index] * item;
+  });
+  // play === COMPUTE ? scoreH - scoreC :
+  return scoreC - scoreH;
 };
 
 // const data = [

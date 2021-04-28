@@ -18,7 +18,7 @@ const hasNeedMatch = params => {
 
   const indexs = [];
 
-  for (let index = 0; index < list.length; index++) {
+  out: for (let index = 0; index < list.length; index++) {
     // 已存在的棋子直接返回;
     if (list[index]) continue;
     // 竖 横
@@ -36,7 +36,7 @@ const hasNeedMatch = params => {
           list[getIndexForPosition([row, newCol], size)] === 3 - chessPlayer)
       ) {
         indexs.push(index);
-        break;
+        continue out;
       }
     }
 
@@ -50,7 +50,7 @@ const hasNeedMatch = params => {
           list[getIndexForPosition([newRow, col], size)] === 3 - chessPlayer)
       ) {
         indexs.push(index);
-        break;
+        continue out;
       }
     }
 
@@ -67,7 +67,7 @@ const hasNeedMatch = params => {
           list[getIndexForPosition([newRow, newCol], size)] === 3 - chessPlayer)
       ) {
         indexs.push(index);
-        break;
+        continue out;
       }
     }
 
@@ -83,7 +83,7 @@ const hasNeedMatch = params => {
           list[getIndexForPosition([newRow, newCol], size)] === 3 - chessPlayer)
       ) {
         indexs.push(index);
-        break;
+        continue out;
       }
     }
   }

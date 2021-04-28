@@ -1,38 +1,25 @@
 import { EMPTY, HUM, COMPUTE, WALL, MAX, MIN, swapRoles } from './constant';
-import getDurationList from './getDurationList';
 import hasNeedMatch from './hasNeedMatch';
-// import getScore from './getScore';
 import evaluate from './evaluate';
 
-function compose(...funcs) {
-  if (funcs.length === 0) {
-    return arg => arg;
-  }
-
-  if (funcs.length === 1) {
-    return funcs[0];
-  }
-
-  return funcs.reduce((a, b) => (...args) => a(b(...args)));
-}
-
 // 获取最佳点位
-const getBastPoints = ({ list, deep, chessPlayer }) => {
+const maxmin = ({ list, deep, chessPlayer }) => {
   let bast = MIN;
   let points = [];
+  let score;
   // 获取需要匹配的点位
   const indexs = hasNeedMatch({ list, chessPlayer });
-
+  // console.log('indexs:', indexs);
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
-
+    if (index === 69 || index === 129) debugger;
     list[index] = chessPlayer;
-    const score = min({
+    score = min({
       list,
-      index,
       chessPlayer: swapRoles(chessPlayer),
       deep: deep - 1,
     });
+
     list[index] = EMPTY;
 
     if (bast < score) {
@@ -46,18 +33,17 @@ const getBastPoints = ({ list, deep, chessPlayer }) => {
   return points;
 };
 
-const min = ({ list, deep, index, chessPlayer }) => {
+const min = ({ list, deep, chessPlayer }) => {
   let bast = MAX;
 
-  let score = evaluate({ list });
-
-  if (deep <= 0 || score >= 100000) {
-    return score;
-  }
+  let score = evaluate(list, chessPlayer);
 
   /**
    * TODO 如果直接能赢或者递归到最底层 那就返回当前点位
    */
+  if (deep <= 0 || score >= 100000) {
+    return score;
+  }
 
   const indexs = hasNeedMatch({ list, chessPlayer });
 
@@ -71,6 +57,7 @@ const min = ({ list, deep, index, chessPlayer }) => {
       deep: deep - 1,
       chessPlayer: swapRoles(chessPlayer),
     });
+
     list[index] = EMPTY;
 
     if (bast > score) {
@@ -84,21 +71,12 @@ const min = ({ list, deep, index, chessPlayer }) => {
 const max = ({ list, index, deep, chessPlayer }) => {
   let bast = MIN;
 
-  let score = handleGetScoreByPosition({
-    list,
-    index,
-    chessPlayer: swapRoles(chessPlayer),
-  });
-
-  if (deep <= 0 || score >= 100000) {
-    return score;
-  }
-
+  let score = evaluate(list, chessPlayer);
   /**
    * TODO 如果直接能赢或者递归到最底层 那就返回当前点位
    */
 
-  if (deep >= 0) {
+  if (deep <= 0 || score >= 100000) {
     return score;
   }
 
@@ -122,3 +100,5 @@ const max = ({ list, index, deep, chessPlayer }) => {
 
   return bast;
 };
+
+export default maxmin;
