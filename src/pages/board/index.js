@@ -1,5 +1,6 @@
 import React, { Component, useRef, useCallback, useEffect } from 'react';
 import evaluate from './ai/evaluate';
+import scan from './ai/scan';
 
 import {
   usePersistFn,
@@ -35,10 +36,12 @@ const Board = props => {
        * 是否人机对战
        */
       isAi: true,
+
+      startPoint: 98,
     };
   });
 
-  const { isAi, chessboard, size, chessPlayer } = state;
+  const { isAi, chessboard, size, chessPlayer, startPoint } = state;
   const timerRef = useRef(null);
 
   useUpdateEffect(() => {
@@ -73,9 +76,11 @@ const Board = props => {
   );
 
   useEffect(() => {
+    // console.log(scan(chessboard))
     findBastPoints({
       list: chessboard,
       chessPlayer: 2,
+      startPoint,
     });
   }, []);
 
