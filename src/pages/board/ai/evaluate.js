@@ -162,7 +162,7 @@ const evaluate = (list, play = COMPUTE) => {
     handle(EOF);
   }
 
-  return computeScore() || { h: h.reverse().join(''), c: c.reverse().join('') };
+  return { h, c, score: computeScore() };
 };
 
 /**
