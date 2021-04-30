@@ -50,5 +50,5 @@ export const swapRoles = c => {
   return 3 - c;
 };
 
-export const MAX = Number.MAX_SAFE_INTEGER;
-export const MIN = Number.MIN_SAFE_INTEGER;
+export const MAX = SCORE_MAP[8] * 10;
+export const MIN = -1 * SCORE_MAP[8] * 10;

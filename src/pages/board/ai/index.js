@@ -6,11 +6,12 @@ const { deep } = config;
  * 寻找下一步落子的位子
  */
 const findBastPoints = ({ list, chessPlayer, startPoint }) => {
-  console.time('iweijie');
+  console.time('time');
   const indexs = maxmin(list, deep, chessPlayer, startPoint);
   const index = getWeight(indexs);
+  console.timeEnd('time');
   console.log('iweijie', indexs, index);
-  console.timeEnd('iweijie');
+  return index;
 };
 
 export default findBastPoints;
