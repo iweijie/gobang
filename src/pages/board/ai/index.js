@@ -1,4 +1,5 @@
-import maxmin from './maxmin';
+import maxmin, { win } from './maxmin';
+import evaluate from './evaluate';
 import config from '../config';
 import getWeight from './weight';
 const { deep } = config;

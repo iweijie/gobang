@@ -19,7 +19,7 @@ const Board = props => {
       // 递归深度
       deep: config.deep,
       // 棋盘
-      chessboard: b() || times(Math.pow(config.size, 2), index => 0),
+      chessboard: a() || times(Math.pow(config.size, 2), index => 0),
       /**
        * 当前棋手  -- 白子:1, 黑子:2
        */
@@ -63,7 +63,7 @@ const Board = props => {
   const running = usePersistFn(() => {
     // 通常是白子先行，但是玩家可以选择先手 后手
     // TODO 需要修改， 先写死
-    if (!isAi || isWin) return;
+    if (!isAi || isWin || chessPlayer === 2) return;
 
     const point = findBastPoints({
       list: chessboard,
@@ -73,7 +73,7 @@ const Board = props => {
 
     // setTimeout(() => {
     //   emit(point);
-    // }, 1000);
+    // }, 200);
   });
 
   useUpdateEffect(running, [chessPlayer]);

@@ -18,7 +18,7 @@ const emptyList = [];
  * 计算当前位置 (米) 一 丨 /  \ 四个方向的列表
  */
 const getDurationList = params => {
-  const { list, index, type, chessPlayer } = params;
+  const { list, index } = params;
   const [row, col] = getPositionFromIndex(index);
 
   const container = [heng, shu, pie, la];

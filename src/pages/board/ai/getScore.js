@@ -1,12 +1,12 @@
 import { isEmpty } from 'lodash';
-import { scoreMap, attack, guard } from './constant';
+import { scoreMap, HUM, COMPUTE, swapRoles } from './constant';
 // 空棋子
 const empty = 0;
 
 let enemy = 0;
 
 // 当前棋子
-let chessPieces = 1;
+let chessPieces = HUM;
 let score = 0;
 let centerInfo = {
   point: 0,
@@ -267,7 +267,6 @@ const handleTurnDirection = () => {
 };
 
 const initial = () => {
-  scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   score = 0;
 
   centerInfo.point = 0;
@@ -295,7 +294,7 @@ const initial = () => {
   direction = -1;
 };
 
-export const getByScore = (list = [], chess = 1, point) => {
+export const getByScore = (list = [], chess = HUM, point) => {
   initial();
   currentList = list;
   chessPieces = chess;
@@ -306,7 +305,7 @@ export const getByScore = (list = [], chess = 1, point) => {
     const s = list[index];
     handle = handle(s);
   }
-  return computeScore(scoreList);
+  // return computeScore(scoreList);
 };
 
 /**
@@ -332,93 +331,36 @@ const computeScore = (scoreList, sealScoreList) => {
   // // 死四
   // if (scoreList[6]) return 1000000;
 
-  // let num = 0;
+  let num = 0;
   for (let i = scoreList.length - 1; i >= 0; i--) {
-    if (scoreList[i]) return i;
+    const d = scoreList[i];
+    num += scoreListTables[i] * d;
   }
-  return 0;
+
+  // for (let i = sealScoreList.length - 1; i >= 0; i--) {
+  //   const d = sealScoreList[i];
+  //   num += sealScoreListTables[i] * d;
+  // }
+  return num;
 };
 
-// const getScore = (list = [], chess = 1, negation = false) => {
-//   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-//   // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-//   list.forEach(item => {
-//     if (isEmpty(item)) return;
-//     enemy = 0;
-//     getByScore(item, chess);
-//     // enemy = 1;
-//     // getByScore(item, 3 - chess);
-//   });
+const getScore = (list = [], chess = 1, negation = false) => {
+  scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  list.forEach(item => {
+    if (isEmpty(item)) return;
+    // enemy = 0;
+    getByScore(item, chess);
+    // enemy = 1;
+    // getByScore(item, swapRoles(chess));
+  });
+  const s = computeScore(scoreList, sealScoreList);
+  // console.log(s);
+  return {
+    s,
+    c: scoreList,
+    // r: sealScoreList,
+  };
+};
 
-//   return computeScore(scoreList);
-// };
-/** test */
-[
-  // 5
-  // [0, 0, 0, 0, 1, '*', 1, 1, 1, 0, 0],
-  // [0, 0, 1, 1, 1, '*', 1, 0, 0, 0, 0],
-  // [0, 0, 1, 1, 1, '*', 1, 1, 0, 0, 0],
-  // [0, 0, 1, 1, 1, '*', 1, 1, 2, 0, 0],
-  // [0, 0, 2, 1, 1, '*', 1, 1, 2, 0, 0],
-  // 4-2
-  // [0, 0, 1, 0, 1, '*', 1, 0, 1, 0, 0],
-  // [0, 0, 0, 0, 1, '*', 1, 1, 0, 0, 0],
-  // [0, 0, 0, 0, 0, '*', 1, 1, 1, 0, 0],
-  // 4-1
-  // [0, 0, 0, 2, 1, '*', 1, 1, 0, 0, 0],
-  // [0, 0, 0, 0, 1, '*', 1, 1, 2, 0, 0],
-  // [0, 0, 2, 0, 1, '*', 1, 1, 2, 0, 0],
-  // [0, 2, 1, 0, 1, '*', 1, 1, 2, 0, 0],
-  // [0, 2, 1, 1, 1, '*', 0, 2, 0, 0, 0],
-  // 3-2
-  // [0, 0, 0, 0, 1, '*', 1, 0, 0, 0, 0],
-  // [0, 2, 0, 0, 1, '*', 1, 0, 2, 0, 0],
-  // [0, 0, 1, 0, 1, '*', 0, 1, 0, 0, 0],
-  // [0, 0, 1, 0, 1, '*', 0, 1, 0, 2, 0],
-  // [0, 0, 0, 0, 1, '*', 0, 1, 0, 2, 0],
-  // 3-1
-  // [0, 0, 0, 2, 1, '*', 1, 0, 0, 0, 0],
-  // [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 1, 0, 0, 2, 0],
-  // [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-  // [0, 2, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-  // [0, 0, 0, 0, 1, '*', 1, 2, 0, 0, 0],
-  // [0, 0, 2, 0, 1, '*', 0, 1, 2, 0, 0],
-  // [0, 2, 1, 0, 1, '*', 0, 1, 2, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 0, 1, 0, 0, 0],
-  // 3-0
-  // [0, 0, 2, 0, 1, '*', 1, 2, 0, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 1, 2, 0, 0, 0],
-  // [0, 0, 2, 0, 1, '*', 1, 0, 2, 0, 0],
-  // 2-2
-  // [0, 0, 0, 0, 1, '*', 0, 0, 0, 0, 0],
-  // [0, 2, 0, 0, 1, '*', 0, 0, 0, 2, 0],
-  // [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-  // 2-1
-  // [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 0, 0, 0, 0, 0],
-  // [0, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-  // [2, 0, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 0, 0, 2, '*', 0, 1, 0, 0, 0],
-  // [0, 0, 0, 1, 0, '*', 0, 2, 0, 0, 0],
-  // 2-0
-  // [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 2, 0, 1, '*', 0, 2, 0, 0, 0],
-  // [0, 0, 2, 0, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 0, 2, 1, '*', 2, 0, 0, 0, 0],
-  // [0, 2, 0, 0, 1, '*', 2, 0, 0, 0, 0],
-  // 1-2
-  // [0, 0, 0, 0, 0, '*', 0, 0, 0, 0, 0],
-  // [0, 0, 0, 2, 0, '*', 0, 0, 0, 0, 0],
-  // 1-1
-  // [0, 0, 0, 0, 2, '*', 0, 0, 0, 0, 0],
-  // [0, 0, 0, 0, 0, '*', 2, 0, 0, 0, 0],
-  // [0, 0, 0, 2, 0, '*', 0, 0, 0, 2, 0],
-  // 1-0
-  //   [-1, 0, 0, 0, 0, '*', 2, 2, 2, 0, 0],
-].forEach(item => {
-  console.log(getByScore(item, 1));
-});
-
-// export default getScore;
+export default getScore;

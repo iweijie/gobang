@@ -369,6 +369,8 @@ const set = current => {
           setScore(score, 4, 1);
         }
       }
+    } else if (length === 4 && leftBlank && blank) {
+      setScore(score, 3, 2);
     } else if (length === 4 && (leftBlank || blank)) {
       setScore(score, 3, 1);
     } else if (length === 3 && leftBlank && blank && countLen >= 6) {

@@ -2,6 +2,9 @@ import getPositionFromIndex, {
   getIndexForPosition,
 } from './getPositionFromIndex';
 import config from '../config';
+import { HUM } from './constant';
+import getScore from './getScore';
+import getDurationList from './getDurationList';
 
 const { size, space } = config;
 
@@ -13,7 +16,7 @@ let count = 0;
  * @param {Boolean} useCache 是否启用缓存
  * @return {Boolean}
  */
-const scan = (list, i = 98) => {
+const scan = (list, i = 98, chessPlayer = HUM) => {
   count = 0;
   const indexs = [];
   // type：1：一格距离；2 两格距离：0：当前点位以有值，不能被添加
@@ -113,9 +116,16 @@ const scan = (list, i = 98) => {
       indexMap[ii] = r;
     }
   }
-  const d = indexs.sort((a, b) => a.type - b.type);
-  // console.log(d);
-  return d.map(item => item.ii);
+
+  indexs.forEach(item => {
+    item.s = getScore(getDurationList({ list, index: item.ii }), chessPlayer);
+  });
+
+  const d = indexs.sort((a, b) => {
+    return b.s.s - a.s.s;
+  });
+
+  return { indexs: indexs.map(item => item.ii), more: indexs };
 };
 
 export default scan;

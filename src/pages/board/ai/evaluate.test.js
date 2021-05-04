@@ -180,14 +180,21 @@ describe('双测试，活三', () => {
     evaluateOneLine(data);
     expect(h.join('')).toBe('000001000');
   });
+
+  test('活三-4', () => {
+    const data = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0];
+    evaluateOneLine(data);
+    expect(h.join('')).toBe('000001000');
+  });
 });
 
 describe('单一测试，死三', () => {
-  test('死三-1', () => {
-    const data = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0];
-    evaluateOneLine(data);
-    expect(h.join('')).toBe('000010000');
-  });
+  // 当前模式更改为活三
+  // test('死三-1', () => {
+  //   const data = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0];
+  //   evaluateOneLine(data);
+  //   expect(h.join('')).toBe('000010000');
+  // });
 
   test('死三-2', () => {
     const data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1];
