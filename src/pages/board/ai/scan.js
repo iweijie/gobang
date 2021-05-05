@@ -2,7 +2,7 @@ import getPositionFromIndex, {
   getIndexForPosition,
 } from './getPositionFromIndex';
 import config from '../config';
-import { HUM } from './constant';
+import { HUM, swapRoles } from './constant';
 import getScore from './getScore';
 import getDurationList from './getDurationList';
 
@@ -117,15 +117,48 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
     }
   }
 
-  indexs.forEach(item => {
-    item.s = getScore(getDurationList({ list, index: item.ii }), chessPlayer);
+  const five = [];
+  const four = [];
+  const towThree = [];
+  const other = [];
+
+  for (let i = 0; i < indexs.length; i++) {
+    const index = indexs[i].ii;
+    const l = getDurationList({ list, index });
+    const { s, c } = getScore(l, chessPlayer);
+    const { s: s1, c: c1 } = getScore(l, swapRoles(chessPlayer));
+    if (c[8] || c1[8]) {
+      five.push(index);
+    } else if (c[7] || c1[7] || c[6] || c1[6]) {
+      four.push(index);
+    } else if (c[5] || c1[5]) {
+      towThree.push(index);
+    } else {
+      indexs[i].s = s + s1;
+      other.push(indexs[i]);
+    }
+  }
+
+  if (five.length) return five;
+  if (four.length) return four;
+  if (towThree.length) return towThree;
+
+  other.sort((a, b) => {
+    return b.s - a.s;
   });
 
-  const d = indexs.sort((a, b) => {
-    return b.s.s - a.s.s;
-  });
+  return other.map(item => item.ii);
 
-  return { indexs: indexs.map(item => item.ii), more: indexs };
+  // indexs.forEach(item => {
+  //   const a = getDurationList({ list, index: item.ii });
+  //   item.s = getScore(a, chessPlayer);
+  // });
+
+  // const d = indexs.sort((a, b) => {
+  //   return b.s.s - a.s.s;
+  // });
+
+  // return { indexs: indexs.map(item => item.ii), more: indexs };
 };
 
 export default scan;

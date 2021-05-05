@@ -344,20 +344,21 @@ const computeScore = (scoreList, sealScoreList) => {
   return num;
 };
 
+const resetScoreList = () => {
+  for (let i = 0; i < scoreList.length; i++) {
+    scoreList[i] = 0;
+  }
+};
+
 const getScore = (list = [], chess = 1, negation = false) => {
   scoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  // sealScoreList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // resetScoreList();
   list.forEach(item => {
     if (isEmpty(item)) return;
-    // enemy = 0;
     getByScore(item, chess);
-    // enemy = 1;
-    // getByScore(item, swapRoles(chess));
   });
-  const s = computeScore(scoreList, sealScoreList);
-  // console.log(s);
   return {
-    s,
+    s: computeScore(scoreList),
     c: scoreList,
     // r: sealScoreList,
   };

@@ -50,13 +50,20 @@ const Border = props => {
       <div className={styles['border']}>
         {map(chessboard, (status, key) => {
           return (
-            <div key={key} data-key={key} onClick={handleDrop}>
+            <div
+              className={classnames({
+                [styles.disabled]: status,
+              })}
+              key={key}
+              data-key={key}
+              onClick={handleDrop}
+            >
               {status === 1 ? (
                 <WhitePiece />
               ) : status === 2 ? (
                 <BlackPiece />
               ) : (
-                key
+                ' '
               )}
             </div>
           );

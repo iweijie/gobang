@@ -35,30 +35,6 @@ export const win = (h, c, play) => {
   if (s[5]) return 1;
   if (s1[5] >= 2) return -1;
   return 0;
-
-  // if (play === HUM) {
-  //   if (c[8]) return false;
-  //   if (h[6] || h[7]) return true;
-  //   if (h[5] && !c[6] && !c[7]) return true;
-  // }
-
-  // if (play === COMPUTE) {
-  //   if (h[8]) return false;
-  //   if (c[6] || c[7]) return true;
-  //   if (c[5] && !h[6] && !h[7]) return true;
-  // }
-
-  // return false;
-};
-
-const five = (h, c, play) => {
-  if (play === HUM) {
-    if (h[8]) return true;
-  }
-  if (play === COMPUTE) {
-    if (c[8]) return true;
-  }
-  return false;
 };
 
 let AB = 0;
@@ -68,46 +44,27 @@ let isWin = false;
 
 // 获取最佳点位
 const maxmin = (list, deep, chessPlayer, startPoint) => {
+  const times = [];
+  let date;
   AB = 0;
   count = 0;
   currentPlay = chessPlayer;
   pointCenter = startPoint;
 
-  const { h, c } = evaluate(list, chessPlayer);
   let best = MIN;
   let points = [];
   const ab = { a: MIN, b: MAX };
   // 获取需要匹配的点位
-  const { indexs, more } = scan(list, pointCenter, chessPlayer);
-  // console.log(chessPlayer, indexs, more);
-  // const indexs = [85, 81];
-  // debugger;
-  // const winType = win(h, c, chessPlayer);
-  // if (winType === 1) {
-  //   const findData = more.find(item => {
-  //     const { s, ii } = item;
-  //     const { c } = s;
-  //     if (c[8] || c[7] || c[6] || c[5] >= 2) return true;
-  //   });
+  const indexs = scan(list, pointCenter, chessPlayer);
 
-  //   return [findData.ii];
-  // } else if (winType === -1) {
-  //   const findData = more.find(item => {
-  //     const { s, ii } = item;
-  //     const { r, c } = s;
-  //     if (c[8] || c[7] || c[6] || c[5] >= 2) return true;
-  //   });
-  //   return [findData.ii];
-  // }
   for (let k = 0; k < indexs.length; k++) {
+    date = Date.now();
     const index = indexs[k];
-    // if (index === 81) debugger;
 
     list[index] = chessPlayer;
     const score = min(list, deep - 1, swapRoles(chessPlayer), ab);
-    // console.log(score);
     list[index] = EMPTY;
-
+    times.push({ time: Math.floor(Date.now() - date) / 1000, index, score });
     if (best < score) {
       ab.a = best = score;
 
@@ -122,6 +79,7 @@ const maxmin = (list, deep, chessPlayer, startPoint) => {
     }
   }
   console.log('剪枝：', AB, '循环：', count);
+  console.log('times:', times);
   return points;
 };
 
@@ -145,7 +103,7 @@ const min = (list, deep, chessPlayer, ab) => {
     return score;
   }
 
-  const { indexs } = scan(list, pointCenter, chessPlayer);
+  const indexs = scan(list, pointCenter, chessPlayer);
 
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
@@ -159,7 +117,7 @@ const min = (list, deep, chessPlayer, ab) => {
       cab.b = best = score;
     }
 
-    if (ab.a >= score) {
+    if (ab.a > score) {
       AB++;
       break;
     }
@@ -189,7 +147,7 @@ const max = (list, deep, chessPlayer, ab) => {
     return score;
   }
 
-  const { indexs } = scan(list, pointCenter, chessPlayer);
+  const indexs = scan(list, pointCenter, chessPlayer);
 
   for (let k = 0; k < indexs.length; k++) {
     const index = indexs[k];
@@ -203,7 +161,7 @@ const max = (list, deep, chessPlayer, ab) => {
       cab.a = best = score;
     }
 
-    if (ab.b <= score) {
+    if (ab.b < score) {
       AB++;
       break;
     }

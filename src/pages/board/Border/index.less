@@ -1,9 +1,11 @@
 .border-wrap {
   padding: 34px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  width: 547px;
+  // position: absolute;
+  // top: 50%;
+  // left: 50%;
+  // transform: translate(-50%, -50%);
   background-size: 10px 10px;
   background-color: #ffe08f;
   border: 1px solid #808080;
@@ -40,13 +42,21 @@
   align-items: center;
 
   > div {
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 34px;
     height: 34px;
     line-height: 34px;
-    // background-color: rgba(1, 1, 1, 0.3);
+    &.disabled {
+      &:hover {
+        border: none;
+      }
+    }
+    &:hover {
+      border: 1px dashed rgba(1, 1, 1, 0.3);
+    }
   }
 }
 
