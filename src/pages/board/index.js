@@ -69,8 +69,6 @@ const Board = props => {
     const d = chessPlayer === HUM ? h : c;
     const isWin1 = !!d[8] ? chessPlayer : 0;
 
-    console.log('isWin1', isWin1);
-
     setState({
       isWin: isWin1,
       boardStatus: isWin1 ? 2 : boardStatus,
@@ -192,8 +190,6 @@ const Board = props => {
   useMount(() => {
     worker.current = MyWorker();
   });
-
-  console.log('boardStatus:', boardStatus, chessPlayer);
 
   return (
     <div className={styles.wrap}>
