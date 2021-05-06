@@ -51,7 +51,7 @@ const getContent = (status, key, isLast) => {
   }
   if (status === 1) return w;
   if (status === 2) return b;
-  return key;
+  return null;
 };
 
 const Border = props => {

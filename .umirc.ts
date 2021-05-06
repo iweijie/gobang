@@ -16,6 +16,8 @@ export default {
     immer: true,
     hmr: false,
   },
+  base: '/gobang/',
+  publicPath: '/gobang/',
   nodeModulesTransform: {
     type: 'none',
   },
