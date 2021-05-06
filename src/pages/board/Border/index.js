@@ -51,11 +51,11 @@ const getContent = (status, key, isLast) => {
   }
   if (status === 1) return w;
   if (status === 2) return b;
-  return null;
+  return key;
 };
 
 const Border = props => {
-  const { chessboard, size, emit, records } = props;
+  const { chessboard, size, boardStatus, emit, records } = props;
   const last = records[records.length - 1];
   const handleDrop = useCallback(
     e => {
@@ -69,7 +69,11 @@ const Border = props => {
   );
 
   return (
-    <div className={styles['border-wrap']}>
+    <div
+      className={classnames(styles['border-wrap'], {
+        [styles.started]: boardStatus === 1,
+      })}
+    >
       <div
         className={styles['border-bg']}
         // +3px的边框宽度
