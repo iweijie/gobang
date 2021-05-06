@@ -1,6 +1,17 @@
-import { defineConfig } from 'umi';
+// import { defineConfig } from 'umi';
 
-export default defineConfig({
+// chainWebpack(config){
+//   config.module
+//     .rule('diy-loader')
+//     .test(/\.js$/)
+//       .exclude
+//       .add([path.resolve('../src/pages/.umi'), path.resolve('node_modules')])
+//       .end()
+//     .use('../loader/jsx-px2rem-loader')
+//       .loader(path.join(__dirname, '../loader/jsx-px2rem-loader'));
+// }
+
+export default {
   dva: {
     immer: true,
     hmr: false,
@@ -8,5 +19,7 @@ export default defineConfig({
   nodeModulesTransform: {
     type: 'none',
   },
+  workerLoader: {},
+  antd: {},
   routes: [{ path: '/', component: '@/pages/board/index' }],
-});
+};

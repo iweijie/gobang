@@ -186,6 +186,11 @@ describe('双测试，活三', () => {
     evaluateOneLine(data);
     expect(h.join('')).toBe('000001000');
   });
+  test('活三-5', () => {
+    const data = [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0];
+    evaluateOneLine(data);
+    expect(h.join('')).toBe('000001000');
+  });
 });
 
 describe('单一测试，死三', () => {
@@ -257,6 +262,11 @@ describe('双测试，活二', () => {
     const data = [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 1, 0];
     evaluateOneLine(data);
     expect(h.join('')).toBe('000100000');
+  });
+  test('死二-3', () => {
+    const data = [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0];
+    evaluateOneLine(data);
+    expect(h.join('')).toBe('001000000');
   });
 });
 

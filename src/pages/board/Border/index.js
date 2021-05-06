@@ -3,13 +3,22 @@ import styles from './index.less';
 import { connect } from 'umi';
 import { map, times, isFunction, get } from 'lodash';
 import classnames from 'classnames';
-import piece from '@/asset/images/piece.jpg';
-import piece1 from '@/asset/images/piece1.jpg';
+import white from '@/asset/images/white.png';
+import black from '@/asset/images/black.png';
+import black_last from '@/asset/images/black_last.png';
+import white_last from '@/asset/images/white_last.png';
 
 const BlackPiece = () => {
   return (
     <div className={classnames(styles['black'], styles['piece'])}>
-      <img src={piece1} alt="" />
+      <img src={black} alt="" />
+    </div>
+  );
+};
+const BlackLastPiece = () => {
+  return (
+    <div className={classnames(styles['black'], styles['piece'])}>
+      <img src={black_last} alt="" />
     </div>
   );
 };
@@ -17,14 +26,37 @@ const BlackPiece = () => {
 const WhitePiece = () => {
   return (
     <div className={classnames(styles['white'], styles['piece'])}>
-      <img src={piece} alt="" />
+      <img src={white} alt="" />
     </div>
   );
 };
 
-const Border = props => {
-  const { chessboard, size, emit } = props;
+const WhiteLastPiece = () => {
+  return (
+    <div className={classnames(styles['white'], styles['piece'])}>
+      <img src={white_last} alt="" />
+    </div>
+  );
+};
 
+const w = <WhitePiece />;
+const wl = <WhiteLastPiece />;
+const b = <BlackPiece />;
+const bl = <BlackLastPiece />;
+
+const getContent = (status, key, isLast) => {
+  if (isLast) {
+    if (status === 1) return wl;
+    return bl;
+  }
+  if (status === 1) return w;
+  if (status === 2) return b;
+  return null;
+};
+
+const Border = props => {
+  const { chessboard, size, emit, records } = props;
+  const last = records[records.length - 1];
   const handleDrop = useCallback(
     e => {
       const index = parseInt(get(e, 'target.dataset.key', -1));
@@ -49,6 +81,7 @@ const Border = props => {
       </div>
       <div className={styles['border']}>
         {map(chessboard, (status, key) => {
+          const isLast = last === key;
           return (
             <div
               className={classnames({
@@ -58,13 +91,7 @@ const Border = props => {
               data-key={key}
               onClick={handleDrop}
             >
-              {status === 1 ? (
-                <WhitePiece />
-              ) : status === 2 ? (
-                <BlackPiece />
-              ) : (
-                ' '
-              )}
+              {getContent(status, key, isLast)}
             </div>
           );
         })}
