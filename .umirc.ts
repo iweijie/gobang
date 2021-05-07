@@ -19,6 +19,7 @@ export default {
   nodeModulesTransform: {
     type: 'none',
   },
+  favicon: '/asset/images/favicon.ico',
   workerLoader: {},
   antd: {},
   routes: [{ path: '/', component: '@/pages/board/index' }],
