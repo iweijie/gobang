@@ -1,4 +1,4 @@
-// import { defineConfig } from 'umi';
+import { defineConfig } from 'umi';
 
 // chainWebpack(config){
 //   config.module
@@ -11,7 +11,7 @@
 //       .loader(path.join(__dirname, '../loader/jsx-px2rem-loader'));
 // }
 
-export default {
+export default defineConfig({
   dva: {
     immer: true,
     hmr: false,
@@ -21,8 +21,9 @@ export default {
   nodeModulesTransform: {
     type: 'none',
   },
-  favicon: '/asset/images/favicon.ico',
+  title: '网页纯净版五子棋',
+  favicon: 'http://f.iweijie.cn/gobang-favicon.ico',
   workerLoader: {},
   antd: {},
   routes: [{ path: '/', component: '@/pages/board/index' }],
-};
+});
