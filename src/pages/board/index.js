@@ -12,40 +12,40 @@ import classNames from 'classnames';
 const { size, deep } = config;
 
 const createChessboard = () => times(Math.pow(size, 2), index => 0);
+const createInitState = () => {
+  return {
+    isWin: 0,
+    // 棋盘  15 * 15
+    chessboard: createChessboard(),
+    /**
+     * 当前棋手  -- 白子:1, 黑子:2
+     */
+    chessPlayer: HUM,
+    /**
+     * 当前棋盘状态
+     * 0:未开始， 1：进行中，2：已结束
+     */
+    boardStatus: 0,
 
+    /**
+     * 是否人机对战
+     */
+    isAi: true,
+    // 在白子先手的时候且第一步未走的时候为true
+    isHUMSente: false,
+
+    // 中心点
+    startPoint: -1,
+
+    // HUM 是否为先手
+    isSente: true,
+
+    // 对局历史
+    records: [],
+  };
+};
 const Board = props => {
-  const [state, setState] = useSetState(() => {
-    return {
-      isWin: 0,
-      // 棋盘  15 * 15
-      chessboard: createChessboard(),
-      /**
-       * 当前棋手  -- 白子:1, 黑子:2
-       */
-      chessPlayer: HUM,
-      /**
-       * 当前棋盘状态
-       * 0:未开始， 1：进行中，2：已结束
-       */
-      boardStatus: 0,
-
-      /**
-       * 是否人机对战
-       */
-      isAi: true,
-      // 在白子先手的时候且第一步未走的时候为true
-      isHUMSente: false,
-
-      // 中心点
-      startPoint: -1,
-
-      // HUM 是否为先手
-      isSente: true,
-
-      // 对局历史
-      records: [],
-    };
-  });
+  const [state, setState] = useSetState(createInitState);
   const worker = useRef(null);
 
   const {
@@ -68,8 +68,6 @@ const Board = props => {
     const { h, c } = evaluate(chessboard, chessPlayer);
     const d = chessPlayer === HUM ? h : c;
     const isWin1 = !!d[8] ? chessPlayer : 0;
-
-    console.log('isWin1', isWin1);
 
     setState({
       isWin: isWin1,
@@ -156,48 +154,24 @@ const Board = props => {
 
       setState(params);
     } else {
-      setState({
-        isWin: 0,
-        // 棋盘  15 * 15
-        chessboard: createChessboard(),
-        /**
-         * 当前棋手  -- 白子:1, 黑子:2
-         */
-        chessPlayer: HUM,
-        /**
-         * 当前棋盘状态
-         * 0:未开始， 1：进行中，2：已结束
-         */
-        boardStatus: 0,
-
-        /**
-         * 是否人机对战
-         */
-        isAi: true,
-        // 在白子先手的时候且第一步未走的时候为true
-        isHUMSente: false,
-
-        // 中心点
-        startPoint: -1,
-
-        // HUM 是否为先手
-        isSente: true,
-
-        // 对局历史
-        records: [],
-      });
+      const f = confirm('确定取消当前棋局，重新开始？');
+      if (f) {
+        setState(createInitState());
+      }
     }
   }, [boardStatus, isSente]);
 
-  const undo = useCallback(() => {
-    if (chessPlayer !== HUM || boardStatus !== 1) return;
+  const undo = usePersistFn(() => {
+    if (boardStatus !== 1 || chessPlayer !== HUM) return;
     let index = records.pop();
     chessboard[index] = EMPTY;
     index = records.pop();
     chessboard[index] = EMPTY;
 
-    setState();
-  }, [records]);
+    setState({
+      chessboard: [...chessboard],
+    });
+  });
 
   const toggleSente = useCallback(
     e => {
@@ -217,15 +191,14 @@ const Board = props => {
     worker.current = MyWorker();
   });
 
-  console.log('boardStatus:', boardStatus, chessPlayer);
-
   return (
-    <div>
+    <div className={styles.wrap}>
       <Border
         emit={emit}
         chessboard={chessboard}
         size={size}
         records={records}
+        boardStatus={boardStatus}
       />
 
       <div className={styles['operating-panel']}>
@@ -269,6 +242,12 @@ const Board = props => {
             </a>
           </p>
         ) : null}
+
+        <p>
+          <a onClick={printChessBoard} className="btn">
+            打印棋局
+          </a>
+        </p>
 
         {isWin ? (
           <p className={styles['win-text']}>

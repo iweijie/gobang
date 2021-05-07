@@ -118,8 +118,11 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
   }
 
   const five = [];
+  const enemyFive = [];
   const four = [];
+  const enemyTowFour = [];
   const towThree = [];
+  const matter = [];
   const other = [];
 
   for (let i = 0; i < indexs.length; i++) {
@@ -127,12 +130,18 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
     const l = getDurationList({ list, index });
     const { s, c } = getScore(l, chessPlayer);
     const { s: s1, c: c1 } = getScore(l, swapRoles(chessPlayer));
-    if (c[8] || c1[8]) {
+    if (c[8]) {
       five.push(index);
-    } else if (c[7] || c1[7] || c[6] || c1[6]) {
+    } else if (c1[8]) {
+      enemyFive.push(index);
+    } else if (c[7] || c[6]) {
       four.push(index);
-    } else if (c[5] || c1[5]) {
+    } else if (c1[7]) {
+      enemyTowFour.push(index);
+    } else if (c[5]) {
       towThree.push(index);
+    } else if (c[4] || c1[4] || c1[5] || c1[6]) {
+      matter.push(index);
     } else {
       indexs[i].s = s + s1;
       other.push(indexs[i]);
@@ -140,25 +149,17 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
   }
 
   if (five.length) return five;
+  if (enemyFive.length) return enemyFive;
   if (four.length) return four;
+  if (enemyTowFour.length) return enemyTowFour;
   if (towThree.length) return towThree;
+  if (matter.length) return matter;
 
   other.sort((a, b) => {
     return b.s - a.s;
   });
 
   return other.map(item => item.ii);
-
-  // indexs.forEach(item => {
-  //   const a = getDurationList({ list, index: item.ii });
-  //   item.s = getScore(a, chessPlayer);
-  // });
-
-  // const d = indexs.sort((a, b) => {
-  //   return b.s.s - a.s.s;
-  // });
-
-  // return { indexs: indexs.map(item => item.ii), more: indexs };
 };
 
 export default scan;
