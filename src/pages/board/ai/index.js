@@ -12,6 +12,9 @@ const findBastPoints = ({ list, chessPlayer, startPoint }) => {
   console.timeEnd('time');
   console.log('iweijie', indexs, index);
   return index;
+
+  // const i = Math.floor(Math.random() * indexs.length);
+  // return indexs[i];
 };
 
 export default findBastPoints;

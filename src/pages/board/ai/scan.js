@@ -117,11 +117,25 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
     }
   }
 
+  // 我方成五
   const five = [];
-  const enemyFive = [];
+  const enemy_five = [];
+  // 活四 或者  死四+活三
   const four = [];
-  const enemyTowFour = [];
-  const towThree = [];
+  const enemy_four = [];
+
+  // 双活三
+  const tow_three = [];
+  const enemy_tow_three = [];
+
+  // 活三 + 死三 || 死四
+  const one_tow_three = [];
+  const enemy_one_tow_three = [];
+
+  // 活三
+  const tow_three_1 = [];
+  const enemy_tow_three_1 = [];
+
   const matter = [];
   const other = [];
 
@@ -133,14 +147,24 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
     if (c[8]) {
       five.push(index);
     } else if (c1[8]) {
-      enemyFive.push(index);
-    } else if (c[7] || c[6]) {
+      enemy_five.push(index);
+    } else if (c[7] || (c[6] && c[5])) {
       four.push(index);
-    } else if (c1[7]) {
-      enemyTowFour.push(index);
+    } else if (c1[7] || (c1[6] && c1[5])) {
+      enemy_four.push(index);
+    } else if (c[5] >= 2) {
+      tow_three.push(index);
+    } else if (c1[5] >= 2) {
+      enemy_tow_three.push(index);
+    } else if ((c[5] && c[4]) || c[6]) {
+      one_tow_three.push(index);
+    } else if ((c1[5] && c1[4]) || c1[6]) {
+      enemy_one_tow_three.push(index);
     } else if (c[5]) {
-      towThree.push(index);
-    } else if (c[4] || c1[4] || c1[5] || c1[6]) {
+      tow_three_1.push(index);
+    } else if (c1[5]) {
+      enemy_tow_three_1.push(index);
+    } else if (c[4] || c1[4]) {
       matter.push(index);
     } else {
       indexs[i].s = s + s1;
@@ -149,10 +173,15 @@ const scan = (list, i = 98, chessPlayer = HUM) => {
   }
 
   if (five.length) return five;
-  if (enemyFive.length) return enemyFive;
+  if (enemy_five.length) return enemy_five;
   if (four.length) return four;
-  if (enemyTowFour.length) return enemyTowFour;
-  if (towThree.length) return towThree;
+  if (enemy_four.length) return enemy_four;
+  if (tow_three.length) return tow_three;
+  if (enemy_tow_three.length) return enemy_tow_three;
+  if (one_tow_three.length) return one_tow_three;
+  if (enemy_one_tow_three.length) return enemy_one_tow_three;
+  if (tow_three_1.length) return tow_three_1;
+  if (enemy_tow_three_1.length) return enemy_tow_three_1;
   if (matter.length) return matter;
 
   other.sort((a, b) => {
