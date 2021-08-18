@@ -1,15 +1,3 @@
-# umi project
+# 五子棋
 
-## Getting Started
-
-Install dependencies,
-
-```bash
-$ yarn
-```
-
-Start the dev server,
-
-```bash
-$ yarn start
-```
+AI的简单使用，发现计算的美
